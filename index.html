@@ -1,0 +1,2059 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Masukkan Ikut Bilangan | Load by Number</title>
+  
+  <!-- Google Font: Quicksand for clean, rounded preschool typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    * {
+      font-family: 'Quicksand', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: manipulation;
+    }
+
+    /* Full-screen shell requirements */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #0c1a30;
+    }
+
+    #game-shell {
+      width: 100%;
+      height: 100dvh;
+      min-height: 100dvh;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #full-screen-background {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #full-screen-background svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    #game-content {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Tactile 3D Preschool Button styling */
+    .btn-3d {
+      transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .btn-3d:active {
+      transform: translateY(4px) !important;
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .btn-orange {
+      background: linear-gradient(180deg, #FFB800 0%, #FF8A00 100%);
+      box-shadow: 0 6px 0 #D35400, 0 12px 20px rgba(211, 84, 0, 0.35);
+      color: #FFFFFF;
+      text-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-green {
+      background: linear-gradient(180deg, #48E07A 0%, #17B853 100%);
+      box-shadow: 0 6px 0 #0E8539, 0 12px 20px rgba(14, 133, 57, 0.35);
+      color: #FFFFFF;
+      text-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-cyan {
+      background: linear-gradient(180deg, #38EF7D 0%, #11998E 100%);
+      box-shadow: 0 6px 0 #0A6B63, 0 12px 20px rgba(10, 107, 99, 0.35);
+      color: #FFFFFF;
+    }
+
+    .btn-purple {
+      background: linear-gradient(180deg, #B368FF 0%, #8728F5 100%);
+      box-shadow: 0 6px 0 #5E11BD, 0 12px 20px rgba(94, 17, 189, 0.35);
+      color: #FFFFFF;
+      text-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-soft {
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 5px 0 #CBD5E1, 0 8px 16px rgba(0, 0, 0, 0.12);
+      color: #1E293B;
+    }
+
+    /* Tactile Floating Cards */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 3px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 16px 36px -8px rgba(0, 20, 60, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Draggable Object Specific Styles */
+    .draggable-item {
+      touch-action: none;
+      cursor: grab;
+      transition: transform 0.15s ease, filter 0.15s ease;
+      will-change: transform;
+    }
+    .draggable-item:active, .is-dragging {
+      cursor: grabbing !important;
+      transform: scale(1.18) !important;
+      filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.35)) !important;
+      z-index: 1000 !important;
+    }
+
+    /* Dropped In Animation */
+    @keyframes snapBounce {
+      0% { transform: scale(0.6) rotate(-8deg); opacity: 0; }
+      60% { transform: scale(1.15) rotate(4deg); opacity: 1; }
+      100% { transform: scale(1) rotate(0); opacity: 1; }
+    }
+    .snap-in {
+      animation: snapBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    /* Mascot Bobbing Animation */
+    @keyframes mascotFloat {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(1.5deg); }
+    }
+    .mascot-bounce {
+      animation: mascotFloat 3s ease-in-out infinite;
+    }
+
+    /* Cheerful Pop Animation */
+    @keyframes celebratePop {
+      0% { transform: scale(0.9); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+    .celebrate-pop {
+      animation: celebratePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Destination Hover Glow */
+    .destination-ready {
+      border: 4px dashed #F59E0B;
+      background: radial-gradient(circle at center, rgba(254, 243, 199, 0.85) 0%, rgba(253, 230, 138, 0.6) 100%);
+    }
+    .destination-hover {
+      border: 4px solid #10B981 !important;
+      transform: scale(1.04);
+      background: radial-gradient(circle at center, rgba(209, 250, 229, 0.95) 0%, rgba(167, 243, 208, 0.75) 100%) !important;
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.45);
+    }
+
+    /* Pastikan SVG di dalam bekas dan rak sentiasa bersaiz penuh & jelas kelihatan */
+    .snap-in svg,
+    .draggable-item svg,
+    #destination-items-container svg,
+    #shelf-items-container svg {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body class="text-slate-800">
+
+<div id="game-shell">
+  <!-- Magical Counting Market Animated SVG Background -->
+  <div id="full-screen-background">
+    <svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Sky Gradient -->
+        <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#4facfe"/>
+          <stop offset="45%" stop-color="#70c4ff"/>
+          <stop offset="85%" stop-color="#e0f2fe"/>
+          <stop offset="100%" stop-color="#fdf4dc"/>
+        </linearGradient>
+
+        <!-- Hills Gradient -->
+        <linearGradient id="hillGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#84e184"/>
+          <stop offset="100%" stop-color="#48bb78"/>
+        </linearGradient>
+        <linearGradient id="hillGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#68d391"/>
+          <stop offset="100%" stop-color="#2f855a"/>
+        </linearGradient>
+
+        <!-- Market Ground Pathway -->
+        <linearGradient id="groundGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#fed7aa"/>
+          <stop offset="50%" stop-color="#fcd34d"/>
+          <stop offset="100%" stop-color="#fb923c"/>
+        </linearGradient>
+      </defs>
+
+      <!-- 1. Sky Base -->
+      <rect width="1440" height="900" fill="url(#skyGrad)"/>
+
+      <!-- 2. Animated Sun with gentle pulsing glow -->
+      <g transform="translate(180, 150)">
+        <circle r="75" fill="#FEF08A" opacity="0.35">
+          <animate attributeName="r" values="75;88;75" dur="4s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.35;0.6;0.35" dur="4s" repeatCount="indefinite"/>
+        </circle>
+        <circle r="55" fill="#FDE047"/>
+        <circle r="45" fill="#FACC15"/>
+      </g>
+
+      <!-- 3. Animated Drifting Fluffy Clouds -->
+      <g fill="#FFFFFF" opacity="0.88">
+        <path d="M 0 110 Q 30 70 70 85 Q 110 50 160 80 Q 210 65 240 100 Q 260 130 220 150 L 20 150 Z">
+          <animateTransform attributeName="transform" type="translate" from="-280, 0" to="1500, 0" dur="42s" repeatCount="indefinite"/>
+        </path>
+        <path d="M 0 60 Q 40 20 90 40 Q 140 10 190 45 Q 230 30 270 70 L 10 70 Z" opacity="0.7">
+          <animateTransform attributeName="transform" type="translate" from="-320, 20" to="1500, 20" dur="58s" repeatCount="indefinite"/>
+        </path>
+        <path d="M 0 130 Q 35 90 85 105 Q 130 80 180 110 Q 220 95 250 135 L 20 135 Z" opacity="0.8">
+          <animateTransform attributeName="transform" type="translate" from="600, 30" to="2100, 30" dur="50s" repeatCount="indefinite"/>
+        </path>
+      </g>
+
+      <!-- 4. Distant Rolling Green Hills -->
+      <path d="M -50 490 Q 250 360 550 430 Q 880 500 1200 410 Q 1380 370 1500 440 L 1500 700 L -50 700 Z" fill="url(#hillGrad1)" opacity="0.75"/>
+      <path d="M -50 540 Q 200 450 520 510 Q 850 430 1180 530 Q 1350 490 1500 520 L 1500 750 L -50 750 Z" fill="url(#hillGrad2)"/>
+
+      <!-- 5. Market Village Shop Canopies & Cottages -->
+      <g transform="translate(120, 430)">
+        <rect x="0" y="70" width="170" height="120" rx="8" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="4"/>
+        <rect x="15" y="100" width="45" height="55" rx="6" fill="#38BDF8"/>
+        <rect x="100" y="90" width="55" height="100" rx="4" fill="#92400E"/>
+        <path d="M -15 70 L 185 70 L 175 35 L -5 35 Z" fill="#EF4444"/>
+        <path d="M 15 70 L 45 70 L 40 35 L 10 35 Z" fill="#FFFFFF"/>
+        <path d="M 75 70 L 105 70 L 100 35 L 70 35 Z" fill="#FFFFFF"/>
+        <path d="M 135 70 L 165 70 L 160 35 L 130 35 Z" fill="#FFFFFF"/>
+        <circle cx="5" cy="73" r="9" fill="#EF4444"/>
+        <circle cx="35" cy="73" r="9" fill="#FFFFFF"/>
+        <circle cx="65" cy="73" r="9" fill="#EF4444"/>
+        <circle cx="95" cy="73" r="9" fill="#FFFFFF"/>
+        <circle cx="125" cy="73" r="9" fill="#EF4444"/>
+        <circle cx="155" cy="73" r="9" fill="#FFFFFF"/>
+      </g>
+
+      <g transform="translate(620, 445)">
+        <rect x="0" y="60" width="190" height="110" rx="8" fill="#FFFBEB" stroke="#FDE68A" stroke-width="4"/>
+        <path d="M -10 60 L 200 60 L 190 25 L 0 25 Z" fill="#10B981"/>
+        <path d="M 25 60 L 60 60 L 55 25 L 20 25 Z" fill="#FBBF24"/>
+        <path d="M 95 60 L 130 60 L 125 25 L 90 25 Z" fill="#FBBF24"/>
+        <path d="M 165 60 L 200 60 L 195 25 L 160 25 Z" fill="#FBBF24"/>
+      </g>
+
+      <g transform="translate(1120, 420)">
+        <rect x="0" y="70" width="180" height="130" rx="8" fill="#F5F3FF" stroke="#DDD6FE" stroke-width="4"/>
+        <rect x="20" y="105" width="50" height="60" rx="6" fill="#818CF8"/>
+        <path d="M -15 70 L 195 70 L 185 30 L -5 30 Z" fill="#8B5CF6"/>
+        <path d="M 20 70 L 55 70 L 50 30 L 15 30 Z" fill="#FB923C"/>
+        <path d="M 90 70 L 125 70 L 120 30 L 85 30 Z" fill="#FB923C"/>
+        <path d="M 160 70 L 195 70 L 190 30 L 155 30 Z" fill="#FB923C"/>
+      </g>
+
+      <!-- 6. Animated Hanging Festival Bunting -->
+      <g>
+        <path d="M 50 280 Q 360 360 700 290 Q 1040 370 1400 290" fill="none" stroke="#F87171" stroke-width="3" stroke-dasharray="6,4"/>
+        <polygon points="120,305 145,345 170,307" fill="#F43F5E">
+          <animateTransform attributeName="transform" type="rotate" values="-3,145,305; 3,145,305; -3,145,305" dur="3s" repeatCount="indefinite"/>
+        </polygon>
+        <polygon points="250,323 275,365 300,324" fill="#3B82F6">
+          <animateTransform attributeName="transform" type="rotate" values="3,275,323; -3,275,323; 3,275,323" dur="2.5s" repeatCount="indefinite"/>
+        </polygon>
+        <polygon points="400,330 425,370 450,331" fill="#FBBF24">
+          <animateTransform attributeName="transform" type="rotate" values="-4,425,330; 4,425,330; -4,425,330" dur="3.2s" repeatCount="indefinite"/>
+        </polygon>
+        <polygon points="550,317 575,360 600,318" fill="#10B981">
+          <animateTransform attributeName="transform" type="rotate" values="4,575,317; -4,575,317; 4,575,317" dur="2.8s" repeatCount="indefinite"/>
+        </polygon>
+        <polygon points="780,312 805,355 830,313" fill="#EC4899">
+          <animateTransform attributeName="transform" type="rotate" values="-3,805,312; 3,805,312; -3,805,312" dur="3.5s" repeatCount="indefinite"/>
+        </polygon>
+        <polygon points="950,332 975,372 1000,333" fill="#8B5CF6">
+          <animateTransform attributeName="transform" type="rotate" values="3,975,332; -3,975,332; 3,975,332" dur="2.9s" repeatCount="indefinite"/>
+        </polygon>
+        <polygon points="1120,325 1145,365 1170,326" fill="#F59E0B">
+          <animateTransform attributeName="transform" type="rotate" values="-4,1145,325; 4,1145,325; -4,1145,325" dur="3.1s" repeatCount="indefinite"/>
+        </polygon>
+        <polygon points="1280,305 1305,348 1330,306" fill="#06B6D4">
+          <animateTransform attributeName="transform" type="rotate" values="3,1305,305; -3,1305,305; 3,1305,305" dur="3.4s" repeatCount="indefinite"/>
+        </polygon>
+      </g>
+
+      <!-- 7. Animated Floating Shimmer Sparkles -->
+      <g fill="#FBBF24">
+        <circle cx="380" cy="220" r="5">
+          <animate attributeName="opacity" values="0.2;1;0.2" dur="2.2s" repeatCount="indefinite"/>
+          <animate attributeName="cy" values="220;210;220" dur="2.2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="890" cy="180" r="6" fill="#F472B6">
+          <animate attributeName="opacity" values="0.3;1;0.3" dur="2.8s" repeatCount="indefinite"/>
+          <animate attributeName="cy" values="180;168;180" dur="2.8s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="1060" cy="240" r="4" fill="#38BDF8">
+          <animate attributeName="opacity" values="0.2;0.9;0.2" dur="1.9s" repeatCount="indefinite"/>
+          <animate attributeName="cy" values="240;230;240" dur="1.9s" repeatCount="indefinite"/>
+        </circle>
+      </g>
+
+      <!-- 8. Magical Cobblestone Market Foreground -->
+      <path d="M -20 620 Q 400 580 800 600 Q 1200 580 1460 620 L 1460 920 L -20 920 Z" fill="url(#groundGrad)"/>
+
+      <!-- Cobblestones Pattern -->
+      <g fill="#E09F3E" opacity="0.35">
+        <ellipse cx="140" cy="690" rx="28" ry="14"/>
+        <ellipse cx="220" cy="710" rx="32" ry="16"/>
+        <ellipse cx="360" cy="670" rx="30" ry="15"/>
+        <ellipse cx="490" cy="720" rx="36" ry="18"/>
+        <ellipse cx="680" cy="680" rx="26" ry="13"/>
+        <ellipse cx="800" cy="710" rx="34" ry="16"/>
+        <ellipse cx="980" cy="670" rx="30" ry="15"/>
+        <ellipse cx="1120" cy="720" rx="35" ry="18"/>
+        <ellipse cx="1290" cy="690" rx="29" ry="14"/>
+        <ellipse cx="280" cy="810" rx="40" ry="18"/>
+        <ellipse cx="580" cy="830" rx="45" ry="20"/>
+        <ellipse cx="900" cy="820" rx="42" ry="19"/>
+        <ellipse cx="1220" cy="830" rx="46" ry="22"/>
+      </g>
+
+      <!-- Barrels & Bushes -->
+      <g transform="translate(60, 750)">
+        <ellipse cx="45" cy="90" rx="45" ry="14" fill="#78350F" opacity="0.3"/>
+        <rect x="10" y="20" width="70" height="75" rx="8" fill="#B45309" stroke="#78350F" stroke-width="3"/>
+        <ellipse cx="45" cy="20" rx="35" ry="12" fill="#92400E"/>
+        <ellipse cx="45" cy="20" rx="30" ry="8" fill="#78350F"/>
+        <circle cx="30" cy="14" r="10" fill="#EF4444"/>
+        <circle cx="48" cy="10" r="11" fill="#DC2626"/>
+        <circle cx="62" cy="15" r="9" fill="#EF4444"/>
+      </g>
+
+      <g transform="translate(1260, 740)">
+        <rect x="10" y="30" width="90" height="60" rx="10" fill="#9A3412" stroke="#7C2D12" stroke-width="3"/>
+        <circle cx="30" cy="20" r="22" fill="#22C55E"/>
+        <circle cx="58" cy="10" r="26" fill="#16A34A"/>
+        <circle cx="85" cy="18" r="20" fill="#22C55E"/>
+        <circle cx="32" cy="16" r="6" fill="#F43F5E"/>
+        <circle cx="32" cy="16" r="2.5" fill="#FDE047"/>
+        <circle cx="58" cy="8" r="7" fill="#FACC15"/>
+        <circle cx="58" cy="8" r="3" fill="#EA580C"/>
+        <circle cx="82" cy="14" r="6" fill="#EC4899"/>
+        <circle cx="82" cy="14" r="2.5" fill="#FFFFFF"/>
+      </g>
+    </svg>
+  </div>
+
+  <main id="game-content">
+    
+    <!-- Top Bar / Navigation -->
+    <header class="w-full max-w-5xl mx-auto px-4 pt-3 pb-1 flex items-center justify-between shrink-0">
+      <!-- Left brand / back / home -->
+      <div class="flex items-center gap-2">
+        <button id="btn-top-back" onclick="navigateBack()" class="hidden btn-3d btn-soft p-2.5 rounded-2xl" aria-label="Kembali">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button id="btn-top-home" onclick="goToHome()" class="hidden btn-3d btn-soft p-2.5 rounded-2xl text-pink-600 border border-pink-200" aria-label="Menu Utama">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#DB2777" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1v-9.5z"></path>
+          </svg>
+        </button>
+        <div class="flex items-center gap-2 bg-white/90 backdrop-blur px-3.5 py-1.5 rounded-2xl shadow-md border-2 border-white">
+          <svg width="24" height="24" viewBox="0 0 32 32">
+            <circle cx="16" cy="16" r="14" fill="#FF8A00"/>
+            <path d="M11 9 L21 9 L21 13 L15 13 L15 16 L20 16 L20 23 L11 23 L11 19 L16 19 L16 17 L11 17 Z" fill="#FFFFFF"/>
+          </svg>
+          <span class="font-extrabold text-sm md:text-base text-amber-700 tracking-tight" id="header-brand-title">Masukkan Ikut Bilangan</span>
+        </div>
+      </div>
+
+      <!-- Center Live Score (Visible in Game) -->
+      <div id="game-score-badge" class="hidden flex items-center gap-2 bg-amber-400 text-amber-950 px-4 py-1.5 rounded-2xl font-black text-sm md:text-base shadow-lg border-2 border-amber-200">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#78350F">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        <span id="txt-score-label">Skor:</span>
+        <span id="val-game-score" class="text-white text-lg">0</span>
+      </div>
+
+      <!-- Right Controls (Audio & Language Switcher) -->
+      <div class="flex items-center gap-2">
+        <!-- Audio Mute Toggle -->
+        <button id="btn-audio-toggle" onclick="toggleAudio()" class="btn-3d btn-soft p-2.5 rounded-2xl" aria-label="Bunyi">
+          <svg id="svg-sound-on" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          </svg>
+          <svg id="svg-sound-off" class="hidden" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+
+        <!-- Bilingual Language Selector Button (BM / EN) -->
+        <button id="btn-language-toggle" onclick="toggleLanguage()" class="btn-3d btn-soft px-3 py-1.5 rounded-2xl flex items-center gap-1.5 border-2 border-indigo-200" aria-label="Tukar Bahasa">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span id="lang-label" class="font-extrabold text-sm text-indigo-700">BM</span>
+        </button>
+      </div>
+    </header>
+
+    <div id="screen-home" class="flex-1 w-full max-w-4xl mx-auto px-4 py-2 flex flex-col justify-between items-center text-center overflow-y-auto">
+      
+      <!-- Top Title Area -->
+      <div class="mt-1 md:mt-4 space-y-1">
+        <div class="inline-block px-4 py-1 rounded-full bg-amber-200/90 text-amber-900 font-extrabold text-xs md:text-sm tracking-wider uppercase shadow-sm">
+          Kindy Klub Preschool Math
+        </div>
+        <h1 id="home-title" class="text-3xl sm:text-5xl md:text-6xl font-black text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)] tracking-tight">
+          Masukkan Ikut Bilangan
+        </h1>
+        <p id="home-subtitle" class="text-base sm:text-xl font-bold text-amber-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)] max-w-xl mx-auto">
+          Jom masukkan barang ikut nombor yang betul!
+        </p>
+      </div>
+
+      <!-- Mascot Center Stage: Kiki the Chibi Honey Bear -->
+      <div class="my-2 md:my-4 flex flex-col items-center">
+        <div class="mascot-container mascot-bounce cursor-pointer" onclick="mascotGiggle()">
+          <svg id="mascot-home-svg" width="180" height="180" viewBox="0 0 200 200" class="drop-shadow-2xl">
+            <!-- Cute Chibi Honey Bear (Kiki) -->
+            <!-- Round Furry Ears -->
+            <circle cx="58" cy="68" r="22" fill="#F59E0B" stroke="#B45309" stroke-width="3.5"/>
+            <circle cx="58" cy="68" r="12" fill="#FDE68A"/>
+            <circle cx="142" cy="68" r="22" fill="#F59E0B" stroke="#B45309" stroke-width="3.5"/>
+            <circle cx="142" cy="68" r="12" fill="#FDE68A"/>
+
+            <!-- Bear Chubby Body -->
+            <ellipse cx="100" cy="148" rx="46" ry="36" fill="#F59E0B" stroke="#B45309" stroke-width="3.5"/>
+            <ellipse cx="100" cy="150" rx="30" ry="24" fill="#FEF3C7"/>
+
+            <!-- Main Bear Head -->
+            <circle cx="100" cy="108" r="50" fill="#FBBF24" stroke="#B45309" stroke-width="4"/>
+
+            <!-- Cute Rosy Cheeks -->
+            <ellipse cx="66" cy="122" rx="10" ry="6.5" fill="#F43F5E" opacity="0.6"/>
+            <ellipse cx="134" cy="122" rx="10" ry="6.5" fill="#F43F5E" opacity="0.6"/>
+
+            <!-- Big Sparkling Anime Bear Eyes -->
+            <ellipse cx="76" cy="100" rx="8" ry="11" fill="#1E293B"/>
+            <circle cx="73.5" cy="96" r="3.5" fill="#FFFFFF"/>
+            <circle cx="78.5" cy="104" r="1.8" fill="#FFFFFF"/>
+
+            <ellipse cx="124" cy="100" rx="8" ry="11" fill="#1E293B"/>
+            <circle cx="121.5" cy="96" r="3.5" fill="#FFFFFF"/>
+            <circle cx="126.5" cy="104" r="1.8" fill="#FFFFFF"/>
+
+            <!-- Cream Snout / Muzzle -->
+            <ellipse cx="100" cy="118" rx="22" ry="16" fill="#FFFBEB" stroke="#FDE68A" stroke-width="2"/>
+            <!-- Heart-shaped brown nose -->
+            <path d="M 94 113 Q 100 110 106 113 Q 100 120 94 113 Z" fill="#78350F"/>
+            <circle cx="98" cy="112" r="1.2" fill="#FFFFFF"/>
+            <!-- Happy Little Bear Smile -->
+            <path d="M 93 118 Q 100 125 107 118" fill="none" stroke="#78350F" stroke-width="3" stroke-linecap="round"/>
+
+            <!-- Cute Paws Waving -->
+            <ellipse cx="62" cy="144" rx="12" ry="10" fill="#FBBF24" stroke="#B45309" stroke-width="3" transform="rotate(-15,62,144)"/>
+            <circle cx="62" cy="144" r="4.5" fill="#FDE68A"/>
+            <ellipse cx="138" cy="144" rx="12" ry="10" fill="#FBBF24" stroke="#B45309" stroke-width="3" transform="rotate(15,138,144)"/>
+            <circle cx="138" cy="144" r="4.5" fill="#FDE68A"/>
+          </svg>
+        </div>
+        <div id="home-mascot-speech" class="bg-white/95 px-4 py-1.5 rounded-2xl shadow-lg border-2 border-amber-300 text-xs sm:text-sm font-extrabold text-amber-800 mt-1">
+          Hai kawan! Jom kita membilang bersama Kiki!
+        </div>
+      </div>
+
+      <!-- Action Button -->
+      <div class="w-full max-w-md pb-4">
+        <button id="btn-start-play" onclick="goToInstructions()" class="btn-3d btn-green w-full py-4 rounded-3xl text-2xl font-black tracking-wide flex items-center justify-center gap-3">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          </svg>
+          <span id="lbl-start-play">Mula Main</span>
+        </button>
+      </div>
+
+    </div>
+
+    <div id="screen-instructions" class="hidden flex-1 w-full max-w-2xl mx-auto px-4 py-3 flex flex-col justify-between items-center text-center overflow-y-auto">
+      <div class="w-full">
+        <h2 id="inst-title" class="text-3xl font-black text-white drop-shadow-md">Cara Main</h2>
+        <p id="inst-desc" class="text-base sm:text-lg font-bold text-amber-200 mt-1 max-w-md mx-auto">
+          Lihat nombor dan masukkan jumlah barang yang betul!
+        </p>
+      </div>
+
+      <!-- Visual Illustrated Animated Instruction Demo Card -->
+      <div class="glass-card w-full p-4 rounded-3xl my-2 flex flex-col items-center relative overflow-hidden">
+        <div class="flex items-center justify-center gap-4 w-full">
+          <!-- Target Display Demo -->
+          <div class="bg-amber-100 border-2 border-amber-300 rounded-2xl p-3 text-center">
+            <span id="demo-inst-lbl" class="text-xs font-extrabold text-amber-800 uppercase block">Sasaran</span>
+            <span class="text-4xl font-black text-amber-600">3</span>
+          </div>
+
+          <!-- Animated Hand dragging Apple to Basket -->
+          <div class="relative w-48 h-32 flex items-center justify-between px-2">
+            <!-- Apple Icon -->
+            <div id="demo-apple" class="w-12 h-12 transition-all duration-1000">
+              <svg viewBox="0 0 100 100" class="w-full h-full">
+                <path d="M 50 30 Q 52 10 65 15" stroke="#15803D" stroke-width="5" fill="none" stroke-linecap="round"/>
+                <ellipse cx="60" cy="16" rx="8" ry="4" fill="#22C55E" transform="rotate(-20, 60, 16)"/>
+                <path d="M 50 35 C 20 20 15 70 30 90 C 45 105 50 95 50 95 C 50 95 55 105 70 90 C 85 70 80 20 50 35 Z" fill="#EF4444"/>
+                <circle cx="35" cy="48" r="5" fill="#FFFFFF" opacity="0.4"/>
+              </svg>
+            </div>
+
+            <!-- Arrow Path -->
+            <svg class="w-16 h-8 text-amber-400" viewBox="0 0 100 40">
+              <path d="M 10 20 Q 50 5 85 20" fill="none" stroke="#F59E0B" stroke-width="4" stroke-dasharray="6,4"/>
+              <polygon points="85,15 95,20 85,25" fill="#F59E0B"/>
+            </svg>
+
+            <!-- Basket Container Icon -->
+            <div class="w-16 h-16">
+              <svg viewBox="0 0 100 100" class="w-full h-full">
+                <path d="M 30 45 Q 50 15 70 45" fill="none" stroke="#B45309" stroke-width="6" stroke-linecap="round"/>
+                <path d="M 20 45 L 80 45 L 72 85 L 28 85 Z" fill="#D97706" stroke="#92400E" stroke-width="4"/>
+                <line x1="28" y1="58" x2="72" y2="58" stroke="#92400E" stroke-width="2.5"/>
+                <line x1="30" y1="72" x2="70" y2="72" stroke="#92400E" stroke-width="2.5"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <p id="inst-subtip" class="text-xs sm:text-sm font-bold text-slate-600 mt-3">
+          Tarik objek ke dalam bekas sehingga bilangannya cukup!
+        </p>
+      </div>
+
+      <!-- Ready Button -->
+      <button onclick="goToRangeSelection()" class="btn-3d btn-orange w-full max-w-sm py-3.5 rounded-3xl text-xl font-black">
+        <span id="lbl-inst-next">Faham! Jom Pilih Nombor</span>
+      </button>
+    </div>
+
+    <div id="screen-range" class="hidden flex-1 w-full max-w-2xl mx-auto px-4 py-3 flex flex-col justify-between items-center text-center overflow-y-auto">
+      <div>
+        <h2 id="range-title" class="text-3xl font-black text-white drop-shadow-md">Pilih Julat Nombor</h2>
+        <p id="range-subtitle" class="text-base font-bold text-amber-200 mt-1">Sesuai mengikut tahap anak anda</p>
+      </div>
+
+      <!-- Range Options -->
+      <div class="w-full max-w-md grid grid-cols-1 gap-2.5 my-3">
+        <button onclick="selectRange('1-5')" class="btn-3d btn-soft p-3 rounded-2xl flex items-center justify-between border-2 border-emerald-300 hover:border-emerald-500">
+          <div class="flex items-center gap-3">
+            <span class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 font-black text-lg flex items-center justify-center">1–5</span>
+            <div class="text-left">
+              <span id="range-label-1" class="font-extrabold text-slate-800 block">Paling Mudah</span>
+              <span id="range-desc-1" class="text-xs text-slate-500 font-bold">Objek tunggal untuk asas membilang</span>
+            </div>
+          </div>
+          <span class="text-emerald-600 font-extrabold text-xs bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200" id="tag-default">Pilihan Biasa</span>
+        </button>
+
+        <button onclick="selectRange('1-10')" class="btn-3d btn-soft p-3 rounded-2xl flex items-center justify-between border-2 border-blue-200 hover:border-blue-400">
+          <div class="flex items-center gap-3">
+            <span class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 font-black text-lg flex items-center justify-center">1–10</span>
+            <div class="text-left">
+              <span id="range-label-2" class="font-extrabold text-slate-800 block">Sederhana</span>
+              <span id="range-desc-2" class="text-xs text-slate-500 font-bold">Membilang hingga 10</span>
+            </div>
+          </div>
+        </button>
+
+        <button onclick="selectRange('1-20')" class="btn-3d btn-soft p-3 rounded-2xl flex items-center justify-between border-2 border-purple-200 hover:border-purple-400">
+          <div class="flex items-center gap-3">
+            <span class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 font-black text-lg flex items-center justify-center">1–20</span>
+            <div class="text-left">
+              <span id="range-label-3" class="font-extrabold text-slate-800 block">Maju</span>
+              <span id="range-desc-3" class="text-xs text-slate-500 font-bold">Campuran objek tunggal dan kumpulan kecil</span>
+            </div>
+          </div>
+        </button>
+
+        <button onclick="selectRange('1-50')" class="btn-3d btn-soft p-3 rounded-2xl flex items-center justify-between border-2 border-amber-200 hover:border-amber-400">
+          <div class="flex items-center gap-3">
+            <span class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 font-black text-lg flex items-center justify-center">1–50</span>
+            <div class="text-left">
+              <span id="range-label-4" class="font-extrabold text-slate-800 block">Kumpulan Puluhan</span>
+              <span id="range-desc-4" class="text-xs text-slate-500 font-bold">Gunakan pek sepuluh (10) dan satu</span>
+            </div>
+          </div>
+        </button>
+
+        <button onclick="selectRange('1-100')" class="btn-3d btn-soft p-3 rounded-2xl flex items-center justify-between border-2 border-rose-200 hover:border-rose-400">
+          <div class="flex items-center gap-3">
+            <span class="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 font-black text-lg flex items-center justify-center">1–100</span>
+            <div class="text-left">
+              <span id="range-label-5" class="font-extrabold text-slate-800 block">Pakar Matematik</span>
+              <span id="range-desc-5" class="text-xs text-slate-500 font-bold">Kumpulan 10 objek yang jelas dan mudah</span>
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <div class="text-xs text-amber-200 font-semibold mb-2">
+        <span id="lbl-range-hint">Sentuh mana-mana julat untuk terus memilih bilangan soalan</span>
+      </div>
+    </div>
+
+    <div id="screen-session" class="hidden flex-1 w-full max-w-2xl mx-auto px-4 py-3 flex flex-col justify-between items-center text-center overflow-y-auto">
+      <div>
+        <h2 id="session-title" class="text-3xl font-black text-white drop-shadow-md">Berapa Banyak Soalan?</h2>
+        <p id="session-subtitle" class="text-base font-bold text-amber-200 mt-1">Pilih mod sesi kegemaran</p>
+      </div>
+
+      <div class="w-full max-w-sm grid grid-cols-2 gap-3 my-4">
+        <button onclick="startSession(5)" class="btn-3d btn-soft p-4 rounded-3xl flex flex-col items-center gap-2 border-2 border-emerald-300">
+          <span class="text-4xl font-black text-emerald-600">5</span>
+          <span id="lbl-session-5" class="font-extrabold text-slate-700 text-sm">5 Soalan</span>
+        </button>
+
+        <button onclick="startSession(10)" class="btn-3d btn-soft p-4 rounded-3xl flex flex-col items-center gap-2 border-2 border-blue-300">
+          <span class="text-4xl font-black text-blue-600">10</span>
+          <span id="lbl-session-10" class="font-extrabold text-slate-700 text-sm">10 Soalan</span>
+        </button>
+
+        <button onclick="startSession(20)" class="btn-3d btn-soft p-4 rounded-3xl flex flex-col items-center gap-2 border-2 border-purple-300">
+          <span class="text-4xl font-black text-purple-600">20</span>
+          <span id="lbl-session-20" class="font-extrabold text-slate-700 text-sm">20 Soalan</span>
+        </button>
+
+        <button onclick="startSession('free')" class="btn-3d btn-cyan p-4 rounded-3xl flex flex-col items-center justify-center gap-1 text-white">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.26-8-12.355-8-5.096 0-5.096 8 0 8 5.095 0 7.26-8 12.355-8z"></path>
+          </svg>
+          <span id="lbl-session-free" class="font-black text-sm">Main Bebas</span>
+        </button>
+      </div>
+
+      <div class="mascot-container mascot-bounce my-2">
+        <svg width="70" height="70" viewBox="0 0 200 200">
+          <circle cx="58" cy="68" r="22" fill="#F59E0B" stroke="#B45309" stroke-width="3.5"/>
+          <circle cx="58" cy="68" r="12" fill="#FDE68A"/>
+          <circle cx="142" cy="68" r="22" fill="#F59E0B" stroke="#B45309" stroke-width="3.5"/>
+          <circle cx="142" cy="68" r="12" fill="#FDE68A"/>
+          <circle cx="100" cy="108" r="50" fill="#FBBF24" stroke="#B45309" stroke-width="4"/>
+          <ellipse cx="66" cy="122" rx="10" ry="6.5" fill="#F43F5E" opacity="0.6"/>
+          <ellipse cx="134" cy="122" rx="10" ry="6.5" fill="#F43F5E" opacity="0.6"/>
+          <ellipse cx="76" cy="100" rx="8" ry="11" fill="#1E293B"/>
+          <circle cx="73.5" cy="96" r="3.5" fill="#FFFFFF"/>
+          <ellipse cx="124" cy="100" rx="8" ry="11" fill="#1E293B"/>
+          <circle cx="121.5" cy="96" r="3.5" fill="#FFFFFF"/>
+          <ellipse cx="100" cy="118" rx="22" ry="16" fill="#FFFBEB" stroke="#FDE68A" stroke-width="2"/>
+          <path d="M 94 113 Q 100 110 106 113 Q 100 120 94 113 Z" fill="#78350F"/>
+          <path d="M 93 118 Q 100 125 107 118" fill="none" stroke="#78350F" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div id="screen-gameplay" class="hidden flex-1 w-full max-w-4xl mx-auto px-3 py-1 flex flex-col justify-between items-center overflow-hidden">
+      
+      <!-- Top Status: Progress Indicator & Target Number Display -->
+      <div class="w-full flex items-center justify-between gap-3 px-2">
+        <div class="bg-white/90 px-3 py-1 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-2">
+          <span id="lbl-prog-text" class="text-xs font-bold text-slate-500">Soalan:</span>
+          <span id="val-prog-current" class="text-sm font-black text-indigo-700">1 / 5</span>
+        </div>
+
+        <div class="bg-gradient-to-r from-amber-400 to-orange-500 px-5 py-1.5 rounded-3xl shadow-lg border-2 border-white flex items-center gap-3">
+          <span id="lbl-target-txt" class="text-white text-base md:text-lg font-black uppercase tracking-wider">Masukkan:</span>
+          <span id="val-target-number" class="text-white text-4xl md:text-5xl font-black drop-shadow">5</span>
+        </div>
+
+        <div class="bg-white/95 px-3 py-1.5 rounded-2xl shadow-md border-2 border-emerald-400 text-right">
+          <span id="lbl-counter-txt" class="text-[10px] sm:text-xs font-extrabold text-emerald-800 uppercase block">Jumlah Diisi</span>
+          <span id="val-loaded-counter" class="text-base sm:text-lg font-black text-emerald-600">0 daripada 5</span>
+        </div>
+      </div>
+
+      <!-- Mascot Guidance & Dynamic Speech Bubble -->
+      <div class="w-full max-w-md my-1 flex items-center justify-center gap-2">
+        <div class="mascot-container mascot-bounce shrink-0 cursor-pointer" onclick="mascotGiggle()">
+          <svg width="55" height="55" viewBox="0 0 200 200">
+            <!-- Simplified Kiki Bear avatar -->
+            <circle cx="58" cy="68" r="20" fill="#F59E0B" stroke="#B45309" stroke-width="3"/>
+            <circle cx="142" cy="68" r="20" fill="#F59E0B" stroke="#B45309" stroke-width="3"/>
+            <circle cx="100" cy="108" r="48" fill="#FBBF24" stroke="#B45309" stroke-width="3.5"/>
+            <ellipse cx="66" cy="120" rx="9" ry="5.5" fill="#F43F5E" opacity="0.6"/>
+            <ellipse cx="134" cy="120" rx="9" ry="5.5" fill="#F43F5E" opacity="0.6"/>
+            <ellipse cx="76" cy="100" rx="7" ry="10" fill="#1E293B"/>
+            <circle cx="74" cy="97" r="3" fill="#FFFFFF"/>
+            <ellipse cx="124" cy="100" rx="7" ry="10" fill="#1E293B"/>
+            <circle cx="122" cy="97" r="3" fill="#FFFFFF"/>
+            <ellipse cx="100" cy="116" rx="18" ry="13" fill="#FFFBEB"/>
+            <circle cx="100" cy="112" r="4.5" fill="#78350F"/>
+            <path d="M 94 117 Q 100 122 106 117" fill="none" stroke="#78350F" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div id="gameplay-mascot-bubble" class="bg-white/95 px-3 py-1.5 rounded-2xl shadow-md border-2 border-amber-300 text-xs sm:text-sm font-extrabold text-amber-800 max-w-[280px]">
+          Tarik barang ke dalam bekas!
+        </div>
+      </div>
+
+      <!-- Central Play Zone: Destination Container (Drop Zone) -->
+      <div id="destination-drop-zone" class="w-full max-w-xl min-h-[175px] sm:min-h-[210px] rounded-3xl destination-ready p-3 flex flex-col items-center justify-between relative transition-all duration-200 shadow-inner">
+        <div class="bg-amber-600 text-white px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 7h-3V6a4 4 0 0 0-8 0v1H5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zm-9-1a2 2 0 0 1 4 0v1h-4V6z"/>
+          </svg>
+          <span id="destination-title">Bakul Buah</span>
+        </div>
+
+        <div id="destination-items-container" class="w-full flex-1 flex flex-wrap items-center justify-center gap-2.5 p-2 overflow-y-auto pointer-events-none min-h-[90px]">
+          <!-- Loaded items snap here -->
+        </div>
+
+        <div class="w-48 sm:w-64 h-3 bg-white/80 rounded-full overflow-hidden border border-amber-300 p-0.5 shadow-sm">
+          <div id="destination-progress-fill" class="h-full bg-emerald-500 rounded-full transition-all duration-300" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Draggable Source Shelf / Inventory Tray -->
+      <div class="w-full max-w-2xl bg-white/90 backdrop-blur rounded-3xl p-2.5 shadow-lg border-2 border-white my-1">
+        <div class="flex items-center justify-between px-2 mb-1">
+          <span id="shelf-guide-txt" class="text-xs font-extrabold text-slate-500 uppercase">Pilih & Tarik ke atas:</span>
+          <span id="shelf-hint-txt" class="text-[11px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Tarik atau Tekan</span>
+        </div>
+        
+        <div id="shelf-items-container" class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 min-h-[85px] py-1 px-2">
+          <!-- Draggable items populated dynamically -->
+        </div>
+      </div>
+
+    </div>
+
+    <div id="screen-connect" class="hidden flex-1 w-full max-w-3xl mx-auto px-4 py-2 flex flex-col justify-between items-center overflow-hidden">
+      <div class="w-full flex items-center justify-between px-2">
+        <div>
+          <span id="connect-badge-tag" class="bg-indigo-600 text-white text-[11px] font-black uppercase px-2.5 py-0.5 rounded-full shadow">Permainan Bonus</span>
+          <h2 id="connect-title" class="text-2xl font-black text-white drop-shadow">Padankan Nombor & Kuantiti</h2>
+        </div>
+        <div class="bg-white/95 px-3 py-1 rounded-2xl shadow border border-indigo-200 text-indigo-700 font-extrabold text-xs">
+          <span id="connect-pairs-left">3 Pasangan</span>
+        </div>
+      </div>
+
+      <div class="relative w-full flex-1 max-h-[460px] my-2 rounded-3xl glass-card p-4 flex items-center justify-between">
+        <svg id="connect-svg-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-20"></svg>
+
+        <div id="connect-numbers-col" class="flex flex-col justify-around h-full z-10 w-28 sm:w-36 space-y-3"></div>
+
+        <div class="text-center z-10 pointer-events-none px-2 hidden sm:block">
+          <div id="connect-guide-txt" class="text-xs font-extrabold text-indigo-500 bg-indigo-50 px-3 py-1.5 rounded-2xl border border-indigo-100">
+            Tarik garisan ke kumpulan yang sama!
+          </div>
+        </div>
+
+        <div id="connect-quantities-col" class="flex flex-col justify-around h-full z-10 w-36 sm:w-44 space-y-3"></div>
+      </div>
+
+      <button id="btn-skip-connect" onclick="finishConnectBonus()" class="btn-3d btn-soft py-2 px-6 rounded-2xl text-xs font-extrabold text-slate-600">
+        <span id="lbl-btn-skip-bonus">Seterusnya</span>
+      </button>
+    </div>
+
+    <div id="screen-result" class="hidden flex-1 w-full max-w-xl mx-auto px-4 py-3 flex flex-col justify-between items-center text-center overflow-y-auto">
+      <div class="my-1">
+        <div id="res-badge-tag" class="inline-block bg-amber-400 text-amber-950 px-4 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-1">
+          Tahniah!
+        </div>
+        <h2 id="result-title" class="text-3xl sm:text-4xl font-black text-white drop-shadow-md">Permainan Tamat</h2>
+        <p id="result-subtitle" class="text-sm font-bold text-amber-100">Hebatnya! Anda berjaya membilang semua!</p>
+      </div>
+
+      <!-- Mascot Celebration Pose: Kiki Bear with Party Hat -->
+      <div class="mascot-container mascot-bounce my-2">
+        <svg width="135" height="135" viewBox="0 0 200 200" class="drop-shadow-2xl">
+          <!-- Ears -->
+          <circle cx="56" cy="74" r="20" fill="#F59E0B" stroke="#B45309" stroke-width="3"/>
+          <circle cx="56" cy="74" r="10" fill="#FDE68A"/>
+          <circle cx="144" cy="74" r="20" fill="#F59E0B" stroke="#B45309" stroke-width="3"/>
+          <circle cx="144" cy="74" r="10" fill="#FDE68A"/>
+
+          <!-- Body -->
+          <ellipse cx="100" cy="150" rx="42" ry="32" fill="#F59E0B" stroke="#B45309" stroke-width="3"/>
+          <ellipse cx="100" cy="152" rx="26" ry="20" fill="#FEF3C7"/>
+
+          <!-- Head -->
+          <circle cx="100" cy="112" r="46" fill="#FBBF24" stroke="#B45309" stroke-width="3.5"/>
+
+          <!-- Star Party Hat -->
+          <polygon points="100,24 80,68 120,68" fill="#F43F5E" stroke="#BE123C" stroke-width="2.5"/>
+          <circle cx="100" cy="22" r="6.5" fill="#FACC15"/>
+          <circle cx="100" cy="46" r="3" fill="#FFFFFF"/>
+
+          <!-- Happy Squint Eyes -->
+          <path d="M 68 108 Q 78 98 88 108" fill="none" stroke="#1E293B" stroke-width="4" stroke-linecap="round"/>
+          <path d="M 112 108 Q 122 98 132 108" fill="none" stroke="#1E293B" stroke-width="4" stroke-linecap="round"/>
+
+          <!-- Rosy Cheeks -->
+          <ellipse cx="68" cy="122" rx="8" ry="5.5" fill="#F43F5E" opacity="0.6"/>
+          <ellipse cx="132" cy="122" rx="8" ry="5.5" fill="#F43F5E" opacity="0.6"/>
+
+          <!-- Snout & Big Laughing Mouth -->
+          <ellipse cx="100" cy="120" rx="20" ry="14" fill="#FFFBEB"/>
+          <circle cx="100" cy="115" r="4.5" fill="#78350F"/>
+          <path d="M 90 122 Q 100 136 110 122 Z" fill="#E11D48"/>
+
+          <!-- Hands Waving High in the Air -->
+          <ellipse cx="54" cy="85" rx="11" ry="9" fill="#FBBF24" stroke="#B45309" stroke-width="2.5" transform="rotate(-30,54,85)"/>
+          <circle cx="54" cy="85" r="3.5" fill="#FDE68A"/>
+          <ellipse cx="146" cy="85" rx="11" ry="9" fill="#FBBF24" stroke="#B45309" stroke-width="2.5" transform="rotate(30,146,85)"/>
+          <circle cx="146" cy="85" r="3.5" fill="#FDE68A"/>
+        </svg>
+      </div>
+
+      <!-- Stats Summary Card -->
+      <div class="glass-card w-full p-4 rounded-3xl my-2">
+        <div class="grid grid-cols-2 gap-2.5">
+          <div class="bg-amber-50 p-3 rounded-2xl border border-amber-200">
+            <span id="res-lbl-score" class="text-xs font-extrabold text-amber-800 uppercase block">Skor</span>
+            <span id="res-val-score" class="text-3xl font-black text-amber-600">50</span>
+          </div>
+
+          <div class="bg-emerald-50 p-3 rounded-2xl border border-emerald-200">
+            <span id="res-lbl-acc" class="text-xs font-extrabold text-emerald-800 uppercase block">Ketepatan</span>
+            <span id="res-val-acc" class="text-3xl font-black text-emerald-600">100%</span>
+          </div>
+
+          <div class="bg-blue-50 p-3 rounded-2xl border border-blue-200">
+            <span id="res-lbl-answered" class="text-xs font-extrabold text-blue-800 uppercase block">Soalan Dijawab</span>
+            <span id="res-val-answered" class="text-2xl font-black text-blue-600">5</span>
+          </div>
+
+          <div class="bg-purple-50 p-3 rounded-2xl border border-purple-200">
+            <span id="res-lbl-correct" class="text-xs font-extrabold text-purple-800 uppercase block">Jawapan Betul</span>
+            <span id="res-val-correct" class="text-2xl font-black text-purple-600">5</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="w-full space-y-2.5 max-w-sm pb-2">
+        <button onclick="playAgain()" class="btn-3d btn-green w-full py-3.5 rounded-3xl text-xl font-black">
+          <span id="lbl-btn-again">Main Lagi</span>
+        </button>
+        <button onclick="goToHome()" class="btn-3d btn-soft w-full py-3 rounded-2xl text-base font-extrabold text-slate-700">
+          <span id="lbl-btn-home">Kembali ke Utama</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Celebration Particles -->
+    <div id="celebration-particles" class="fixed inset-0 pointer-events-none z-40 overflow-hidden"></div>
+
+    <!-- Toast Notification Message -->
+    <div id="toast-box" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 bg-white/95 px-5 py-2.5 rounded-2xl shadow-xl border-2 border-amber-400 text-sm font-black text-amber-900 transition-all duration-300 transform -translate-y-8 opacity-0 pointer-events-none">
+      <span id="toast-text">Mesej</span>
+    </div>
+
+    <!-- Mandatory Footer -->
+    <footer class="w-full text-center py-2 shrink-0 z-20">
+      <p class="text-[11px] sm:text-xs font-bold text-white/90 drop-shadow">
+        Kinder Klub | All Rights Reserved
+      </p>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+class PreschoolAudioEngine {
+  constructor() {
+    this.ctx = null;
+    this.enabled = true;
+  }
+
+  initContext() {
+    if (!this.ctx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) {
+        this.ctx = new AudioContext();
+      }
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  }
+
+  playTone(freq, duration, type = 'sine', gainVal = 0.2) {
+    if (!this.enabled) return;
+    try {
+      this.initContext();
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+      gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + duration);
+    } catch (e) {}
+  }
+
+  playPop() {
+    this.playTone(480, 0.1, 'triangle', 0.25);
+  }
+
+  playSnap() {
+    this.playTone(620, 0.15, 'sine', 0.22);
+    setTimeout(() => this.playTone(840, 0.18, 'sine', 0.25), 60);
+  }
+
+  playCelebrate() {
+    const notes = [523.25, 659.25, 783.99, 1046.50];
+    notes.forEach((freq, idx) => {
+      setTimeout(() => {
+        this.playTone(freq, 0.35, 'triangle', 0.3);
+      }, idx * 110);
+    });
+  }
+
+  playGentleReturn() {
+    this.playTone(320, 0.2, 'sine', 0.15);
+    setTimeout(() => this.playTone(260, 0.25, 'sine', 0.15), 100);
+  }
+
+  playChime() {
+    this.playTone(880, 0.3, 'sine', 0.18);
+  }
+}
+
+const audio = new PreschoolAudioEngine();
+
+const I18N = {
+  ms: {
+    brandTitle: "Masukkan Ikut Bilangan",
+    homeTitle: "Masukkan Ikut Bilangan",
+    homeSubtitle: "Jom masukkan barang ikut nombor yang betul!",
+    btnStartPlay: "Mula Main",
+    mascotWelcome: "Hai kawan! Jom kita membilang bersama Kiki!",
+    instTitle: "Cara Main",
+    instDesc: "Lihat nombor dan masukkan jumlah barang yang betul!",
+    instSubtip: "Tarik objek ke dalam bekas sehingga bilangannya cukup!",
+    instNext: "Faham! Jom Pilih Nombor",
+    demoTargetLbl: "Sasaran",
+    rangeTitle: "Pilih Julat Nombor",
+    rangeSubtitle: "Sesuai mengikut tahap anak anda",
+    range1: "Paling Mudah",
+    rangeDesc1: "Objek tunggal untuk asas membilang",
+    range2: "Sederhana",
+    rangeDesc2: "Membilang hingga 10",
+    range3: "Maju",
+    rangeDesc3: "Campuran objek tunggal dan kumpulan kecil",
+    range4: "Kumpulan Puluhan",
+    rangeDesc4: "Gunakan pek sepuluh (10) dan satu",
+    range5: "Pakar Matematik",
+    rangeDesc5: "Kumpulan 10 objek yang jelas dan mudah",
+    rangeTagDefault: "Pilihan Biasa",
+    rangeHint: "Sentuh mana-mana julat untuk terus memilih bilangan soalan",
+    sessionTitle: "Berapa Banyak Soalan?",
+    sessionSubtitle: "Pilih mod sesi kegemaran",
+    session5: "5 Soalan",
+    session10: "10 Soalan",
+    session20: "20 Soalan",
+    sessionFree: "Main Bebas",
+    lblScore: "Skor:",
+    lblProgText: "Soalan:",
+    lblTargetTxt: "Masukkan:",
+    lblCounterTxt: "Jumlah Diisi",
+    counterOf: "daripada",
+    shelfGuide: "Pilih & Tarik ke atas:",
+    shelfHint: "Tarik atau Tekan",
+    destPlaceholder: "Tarik atau tekan barang ke sini!",
+    mascotDragPrompt: "Tarik barang ke dalam bekas!",
+    feedbackSuccess: "Hebat! Cukup semuanya!",
+    feedbackEnough: "Dah cukup!",
+    feedbackTryAnother: "Cuba objek lain!",
+    resCongrats: "Tahniah!",
+    resComplete: "Permainan Tamat",
+    resSub: "Hebatnya! Anda berjaya membilang semua!",
+    resScore: "Skor",
+    resAcc: "Ketepatan",
+    resAnswered: "Soalan Dijawab",
+    resCorrect: "Jawapan Betul",
+    btnPlayAgain: "Main Lagi",
+    btnHome: "Kembali ke Utama",
+    connectBadge: "Permainan Bonus",
+    connectTitle: "Padankan Nombor & Kuantiti",
+    connectGuide: "Tarik garisan ke kumpulan yang sama!",
+    connectSkip: "Seterusnya",
+    connectPairs: "Pasangan",
+    scoreAward: "+10",
+    mascotGiggleText: "Kiki gembira membilang dengan anda!",
+    backBtnAria: "Kembali",
+    audioBtnAria: "Bunyi",
+    langBtnAria: "Tukar Bahasa"
+  },
+  en: {
+    brandTitle: "Load by Number",
+    homeTitle: "Load by Number",
+    homeSubtitle: "Let's load the right amount of objects!",
+    btnStartPlay: "Start Playing",
+    mascotWelcome: "Hi friend! Let's count together with Kiki!",
+    instTitle: "How to Play",
+    instDesc: "Look at the number and load the right amount of objects!",
+    instSubtip: "Drag objects into the container until it matches the number!",
+    instNext: "Got it! Choose Numbers",
+    demoTargetLbl: "Target",
+    rangeTitle: "Choose Number Range",
+    rangeSubtitle: "Perfect for your child's learning stage",
+    range1: "Easiest",
+    rangeDesc1: "Single objects for foundational counting",
+    range2: "Medium",
+    rangeDesc2: "Counting up to 10",
+    range3: "Advanced",
+    rangeDesc3: "Mix of single items and small groups",
+    range4: "Tens Groups",
+    rangeDesc4: "Use packs of ten (10) and ones",
+    range5: "Math Master",
+    rangeDesc5: "Clear groups of 10 for large numbers",
+    rangeTagDefault: "Default",
+    rangeHint: "Tap any range to select question count",
+    sessionTitle: "How Many Questions?",
+    sessionSubtitle: "Choose your play session mode",
+    session5: "5 Questions",
+    session10: "10 Questions",
+    session20: "20 Questions",
+    sessionFree: "Free Play",
+    lblScore: "Score:",
+    lblProgText: "Question:",
+    lblTargetTxt: "Load:",
+    lblCounterTxt: "Amount Loaded",
+    counterOf: "of",
+    shelfGuide: "Pick & Drag upward:",
+    shelfHint: "Touch or Drag",
+    destPlaceholder: "Drop or tap items here!",
+    mascotDragPrompt: "Drag objects into the container!",
+    feedbackSuccess: "Great! That's the right amount!",
+    feedbackEnough: "That's enough!",
+    feedbackTryAnother: "Try another object!",
+    resCongrats: "Congratulations!",
+    resComplete: "Game Complete",
+    resSub: "Awesome! You counted everything correctly!",
+    resScore: "Score",
+    resAcc: "Accuracy",
+    resAnswered: "Questions Answered",
+    resCorrect: "Correct Answers",
+    btnPlayAgain: "Play Again",
+    btnHome: "Back to Home",
+    connectBadge: "Bonus Game",
+    connectTitle: "Match Number & Quantity",
+    connectGuide: "Draw a line to the matching group!",
+    connectSkip: "Next",
+    connectPairs: "Pairs",
+    scoreAward: "+10",
+    mascotGiggleText: "Kiki loves counting with you!",
+    backBtnAria: "Back",
+    audioBtnAria: "Sound",
+    langBtnAria: "Change Language"
+  }
+};
+
+const STORAGE_KEY = 'kinderKlub_masukkanIkutBilangan_playerProfile';
+
+let currentLang = 'ms';
+let currentScreen = 'screen-home';
+let selectedRange = '1-5';
+let sessionQuestionCount = 5;
+let currentQuestionIndex = 0;
+let sessionScore = 0;
+let sessionCorrectCount = 0;
+let sessionMistakes = 0;
+
+let currentTargetNumber = 5;
+let currentLoadedCount = 0;
+let activeTheme = null;
+let currentLoadedObjects = [];
+let availableShelfItems = [];
+let previousTaskSignature = "";
+
+const THEMES = [
+  {
+    id: "fruits",
+    name_ms: "Bakul Buah",
+    name_en: "Fruit Basket",
+    items: [
+      { id: "apple", val: 1, name_ms: "Epal", name_en: "Apple", svg: `<svg viewBox="0 0 100 100"><path d="M50 28 Q52 10 65 15" stroke="#15803D" stroke-width="5" fill="none" stroke-linecap="round"/><ellipse cx="60" cy="16" rx="8" ry="4" fill="#22C55E" transform="rotate(-20,60,16)"/><path d="M50 35 C20 20 15 70 30 90 C45 105 50 95 50 95 C50 95 55 105 70 90 C85 70 80 20 50 35 Z" fill="#EF4444"/><circle cx="35" cy="48" r="5" fill="#FFFFFF" opacity="0.4"/></svg>` },
+      { id: "orange", val: 1, name_ms: "Oren", name_en: "Orange", svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="55" r="38" fill="#F97316"/><circle cx="50" cy="55" r="35" fill="#FB923C"/><path d="M50 20 Q52 8 62 12" stroke="#15803D" stroke-width="4" fill="none" stroke-linecap="round"/><ellipse cx="58" cy="14" rx="7" ry="3.5" fill="#22C55E" transform="rotate(-20,58,14)"/><circle cx="36" cy="42" r="4" fill="#FFFFFF" opacity="0.4"/></svg>` },
+      { id: "strawberry", val: 1, name_ms: "Strawberi", name_en: "Strawberry", svg: `<svg viewBox="0 0 100 100"><path d="M50 88 C32 78 22 55 24 38 C26 26 74 26 76 38 C78 55 68 78 50 88 Z" fill="#E11D48"/><path d="M40 28 L50 34 L60 28 L54 22 L50 26 L46 22 Z" fill="#16A34A"/><circle cx="36" cy="44" r="2" fill="#FDE047"/><circle cx="48" cy="52" r="2" fill="#FDE047"/><circle cx="60" cy="44" r="2" fill="#FDE047"/><circle cx="42" cy="65" r="2" fill="#FDE047"/><circle cx="54" cy="65" r="2" fill="#FDE047"/><circle cx="48" cy="76" r="2" fill="#FDE047"/></svg>` },
+      { id: "pear", val: 1, name_ms: "Pir", name_en: "Pear", svg: `<svg viewBox="0 0 100 100"><path d="M50 22 Q52 10 60 14" stroke="#713F12" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M50 30 C38 30 38 48 30 62 C20 78 30 92 50 92 C70 92 80 78 70 62 C62 48 62 30 50 30 Z" fill="#84CC16"/><circle cx="40" cy="55" r="4" fill="#FFFFFF" opacity="0.35"/></svg>` },
+      { id: "banana", val: 1, name_ms: "Pisang", name_en: "Banana", svg: `<svg viewBox="0 0 100 100"><path d="M25 75 Q40 85 65 72 Q82 60 85 30 Q75 48 55 58 Q35 68 25 75 Z" fill="#FACC15" stroke="#EAB308" stroke-width="2"/><path d="M85 30 L88 24" stroke="#713F12" stroke-width="4" stroke-linecap="round"/></svg>` }
+    ],
+    group10: { id: "fruit_crate_10", val: 10, name_ms: "Kotak 10 Buah", name_en: "10-Fruit Crate", svg: `<svg viewBox="0 0 120 100"><rect x="10" y="30" width="100" height="60" rx="6" fill="#D97706" stroke="#92400E" stroke-width="3"/><rect x="15" y="42" width="90" height="10" rx="3" fill="#B45309"/><rect x="15" y="64" width="90" height="10" rx="3" fill="#B45309"/><circle cx="30" cy="26" r="9" fill="#EF4444"/><circle cx="50" cy="24" r="9" fill="#F97316"/><circle cx="70" cy="25" r="9" fill="#84CC16"/><circle cx="90" cy="27" r="9" fill="#E11D48"/><rect x="42" y="50" width="36" height="20" rx="4" fill="#FEF3C7"/><text x="60" y="65" font-size="14" font-weight="900" fill="#92400E" text-anchor="middle">10</text></svg>` }
+  },
+  {
+    id: "animals",
+    name_ms: "Kandang Haiwan",
+    name_en: "Animal Pen",
+    items: [
+      { 
+        id: "cat", 
+        val: 1, 
+        name_ms: "Kucing", 
+        name_en: "Cat", 
+        svg: `<svg viewBox="0 0 100 100"><polygon points="18,42 26,16 46,34" fill="#FB923C" stroke="#EA580C" stroke-width="2" stroke-linejoin="round"/><polygon points="23,38 29,22 42,34" fill="#F472B6"/><polygon points="82,42 74,16 54,34" fill="#FB923C" stroke="#EA580C" stroke-width="2" stroke-linejoin="round"/><polygon points="77,38 71,22 58,34" fill="#F472B6"/><ellipse cx="50" cy="58" rx="38" ry="32" fill="#FFEDD5" stroke="#FB923C" stroke-width="2.5"/><path d="M50 30 L50 40 M43 32 L45 40 M57 32 L55 40" stroke="#F97316" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="26" cy="66" rx="7" ry="4.5" fill="#FDA4AF" opacity="0.8"/><ellipse cx="74" cy="66" rx="7" ry="4.5" fill="#FDA4AF" opacity="0.8"/><ellipse cx="34" cy="56" rx="7" ry="9" fill="#1E293B"/><circle cx="32" cy="53" r="3.2" fill="#FFFFFF"/><circle cx="37" cy="60" r="1.5" fill="#FFFFFF"/><ellipse cx="66" cy="56" rx="7" ry="9" fill="#1E293B"/><circle cx="64" cy="53" r="3.2" fill="#FFFFFF"/><circle cx="69" cy="60" r="1.5" fill="#FFFFFF"/><polygon points="50,65 47,62 53,62" fill="#F43F5E"/><path d="M44 68 Q47 72 50 68 Q53 72 56 68" stroke="#7C2D12" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M22 62 L12 60 M22 66 L11 68" stroke="#F97316" stroke-width="1.8" stroke-linecap="round"/><path d="M78 62 L88 60 M78 66 L89 68" stroke="#F97316" stroke-width="1.8" stroke-linecap="round"/><ellipse cx="40" cy="86" rx="6.5" ry="5" fill="#FFFFFF" stroke="#FED7AA" stroke-width="1.5"/><ellipse cx="60" cy="86" rx="6.5" ry="5" fill="#FFFFFF" stroke="#FED7AA" stroke-width="1.5"/></svg>` 
+      },
+      { 
+        id: "dog", 
+        val: 1, 
+        name_ms: "Anjing", 
+        name_en: "Puppy", 
+        svg: `<svg viewBox="0 0 100 100"><ellipse cx="18" cy="52" rx="11" ry="20" fill="#92400E" transform="rotate(-15,18,52)"/><ellipse cx="82" cy="52" rx="11" ry="20" fill="#92400E" transform="rotate(15,82,52)"/><ellipse cx="50" cy="58" rx="36" ry="32" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2.5"/><ellipse cx="64" cy="54" rx="15" ry="14" fill="#B45309" opacity="0.35"/><ellipse cx="26" cy="68" rx="6.5" ry="4" fill="#FDA4AF" opacity="0.8"/><ellipse cx="74" cy="68" rx="6.5" ry="4" fill="#FDA4AF" opacity="0.8"/><ellipse cx="36" cy="56" rx="6.5" ry="8.5" fill="#1E293B"/><circle cx="34" cy="53" r="3" fill="#FFFFFF"/><circle cx="39" cy="59" r="1.4" fill="#FFFFFF"/><ellipse cx="64" cy="56" rx="6.5" ry="8.5" fill="#1E293B"/><circle cx="62" cy="53" r="3" fill="#FFFFFF"/><circle cx="67" cy="59" r="1.4" fill="#FFFFFF"/><ellipse cx="50" cy="65" rx="5" ry="3.5" fill="#1E293B"/><circle cx="48.5" cy="64" r="1" fill="#FFFFFF"/><path d="M44 69 Q50 75 56 69" stroke="#78350F" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M47 71 Q50 78 53 71 Z" fill="#FB7185"/><ellipse cx="40" cy="86" rx="7" ry="5" fill="#FFFFFF" stroke="#FDE68A" stroke-width="1.5"/><ellipse cx="60" cy="86" rx="7" ry="5" fill="#FFFFFF" stroke="#FDE68A" stroke-width="1.5"/></svg>` 
+      },
+      { 
+        id: "chick", 
+        val: 1, 
+        name_ms: "Anak Ayam", 
+        name_en: "Chick", 
+        svg: `<svg viewBox="0 0 100 100"><path d="M50 24 Q46 12 42 16 Q48 18 50 24 Q54 13 58 18 Q53 20 50 24" fill="#F59E0B"/><ellipse cx="50" cy="58" rx="37" ry="34" fill="#FDE047" stroke="#EAB308" stroke-width="2.5"/><ellipse cx="14" cy="60" rx="7" ry="12" fill="#FACC15" transform="rotate(-15,14,60)"/><ellipse cx="86" cy="60" rx="7" ry="12" fill="#FACC15" transform="rotate(15,86,60)"/><ellipse cx="27" cy="65" rx="6" ry="4" fill="#FB7185" opacity="0.75"/><ellipse cx="73" cy="65" rx="6" ry="4" fill="#FB7185" opacity="0.75"/><ellipse cx="36" cy="54" rx="6.5" ry="8.5" fill="#1E293B"/><circle cx="34" cy="51" r="3" fill="#FFFFFF"/><circle cx="39" cy="57" r="1.4" fill="#FFFFFF"/><ellipse cx="64" cy="54" rx="6.5" ry="8.5" fill="#1E293B"/><circle cx="62" cy="51" r="3" fill="#FFFFFF"/><circle cx="67" cy="57" r="1.4" fill="#FFFFFF"/><polygon points="50,60 43,67 57,67" fill="#F97316"/><path d="M40 88 L40 94 M36 94 L44 94" stroke="#EA580C" stroke-width="2.5" stroke-linecap="round"/><path d="M60 88 L60 94 M56 94 L64 94" stroke="#EA580C" stroke-width="2.5" stroke-linecap="round"/></svg>` 
+      },
+      { 
+        id: "sheep", 
+        val: 1, 
+        name_ms: "Biri-biri", 
+        name_en: "Sheep", 
+        svg: `<svg viewBox="0 0 100 100"><g fill="#F8FAFC" stroke="#E2E8F0" stroke-width="2"><circle cx="26" cy="40" r="14"/><circle cx="74" cy="40" r="14"/><circle cx="20" cy="58" r="14"/><circle cx="80" cy="58" r="14"/><circle cx="30" cy="74" r="14"/><circle cx="70" cy="74" r="14"/><circle cx="50" cy="78" r="14"/><circle cx="50" cy="34" r="16"/></g><ellipse cx="20" cy="46" rx="6" ry="12" fill="#FBCFE8" stroke="#F472B6" stroke-width="1.5" transform="rotate(-35,20,46)"/><ellipse cx="80" cy="46" rx="6" ry="12" fill="#FBCFE8" stroke="#F472B6" stroke-width="1.5" transform="rotate(35,80,46)"/><ellipse cx="50" cy="57" rx="26" ry="22" fill="#FFE4E6" stroke="#FDA4AF" stroke-width="2"/><circle cx="44" cy="38" r="7" fill="#FFFFFF"/><circle cx="56" cy="38" r="7" fill="#FFFFFF"/><circle cx="50" cy="35" r="8" fill="#FFFFFF"/><ellipse cx="32" cy="63" rx="5" ry="3.5" fill="#FB7185" opacity="0.8"/><ellipse cx="68" cy="63" rx="5" ry="3.5" fill="#FB7185" opacity="0.8"/><ellipse cx="39" cy="54" rx="5.5" ry="7.5" fill="#1E293B"/><circle cx="37.5" cy="52" r="2.5" fill="#FFFFFF"/><circle cx="41.5" cy="57" r="1.2" fill="#FFFFFF"/><ellipse cx="61" cy="54" rx="5.5" ry="7.5" fill="#1E293B"/><circle cx="59.5" cy="52" r="2.5" fill="#FFFFFF"/><circle cx="63.5" cy="57" r="1.2" fill="#FFFFFF"/><path d="M47 64 Q50 67 53 64" stroke="#BE185D" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="42" cy="86" rx="5" ry="4" fill="#E2E8F0"/><ellipse cx="58" cy="86" rx="5" ry="4" fill="#E2E8F0"/></svg>` 
+      },
+      { 
+        id: "cow", 
+        val: 1, 
+        name_ms: "Lembu", 
+        name_en: "Calf", 
+        svg: `<svg viewBox="0 0 100 100"><polygon points="32,24 25,12 38,20" fill="#FDE047" stroke="#EAB308" stroke-width="1.5"/><polygon points="68,24 75,12 62,20" fill="#FDE047" stroke="#EAB308" stroke-width="1.5"/><ellipse cx="18" cy="40" rx="6" ry="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" transform="rotate(-30,18,40)"/><ellipse cx="18" cy="40" rx="4" ry="8" fill="#FBCFE8" transform="rotate(-30,18,40)"/><ellipse cx="82" cy="40" rx="6" ry="12" fill="#334155" stroke="#1E293B" stroke-width="1.5" transform="rotate(30,82,40)"/><ellipse cx="50" cy="54" rx="36" ry="32" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2.5"/><path d="M26 34 C35 30 45 42 38 52 C30 56 22 48 26 34 Z" fill="#334155"/><circle cx="74" cy="36" r="8" fill="#334155"/><ellipse cx="36" cy="50" rx="6.5" ry="8.5" fill="#1E293B"/><circle cx="34" cy="47" r="3" fill="#FFFFFF"/><circle cx="39" cy="53" r="1.4" fill="#FFFFFF"/><ellipse cx="64" cy="50" rx="6.5" ry="8.5" fill="#1E293B"/><circle cx="62" cy="47" r="3" fill="#FFFFFF"/><circle cx="67" cy="53" r="1.4" fill="#FFFFFF"/><ellipse cx="50" cy="69" rx="22" ry="14" fill="#FBCFE8" stroke="#F472B6" stroke-width="2"/><ellipse cx="43" cy="68" rx="3" ry="2.2" fill="#BE185D"/><ellipse cx="57" cy="68" rx="3" ry="2.2" fill="#BE185D"/><path d="M46 75 Q50 78 54 75" stroke="#BE185D" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="24" cy="63" rx="5.5" ry="3.5" fill="#FDA4AF" opacity="0.8"/><ellipse cx="76" cy="63" rx="5.5" ry="3.5" fill="#FDA4AF" opacity="0.8"/></svg>` 
+      },
+      { 
+        id: "rabbit", 
+        val: 1, 
+        name_ms: "Arnab", 
+        name_en: "Bunny", 
+        svg: `<svg viewBox="0 0 100 100"><ellipse cx="34" cy="24" rx="8" ry="20" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2" transform="rotate(-10,34,24)"/><ellipse cx="34" cy="24" rx="4.5" ry="14" fill="#FBCFE8" transform="rotate(-10,34,24)"/><path d="M60 40 Q65 14 74 16 Q80 20 70 36 Z" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2"/><path d="M63 36 Q67 20 72 20 Q75 24 69 34 Z" fill="#FBCFE8"/><ellipse cx="50" cy="60" rx="36" ry="30" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2.5"/><path d="M14 62 L18 58 L14 54 Z" fill="#FFFFFF"/><path d="M86 62 L82 58 L86 54 Z" fill="#FFFFFF"/><ellipse cx="26" cy="67" rx="7" ry="4.5" fill="#FDA4AF" opacity="0.85"/><ellipse cx="74" cy="67" rx="7" ry="4.5" fill="#FDA4AF" opacity="0.85"/><ellipse cx="36" cy="56" rx="6.5" ry="8.5" fill="#1E293B"/><circle cx="34" cy="53" r="3" fill="#FFFFFF"/><circle cx="39" cy="59" r="1.4" fill="#FFFFFF"/><ellipse cx="64" cy="56" rx="6.5" ry="8.5" fill="#1E293B"/><circle cx="62" cy="53" r="3" fill="#FFFFFF"/><circle cx="67" cy="59" r="1.4" fill="#FFFFFF"/><ellipse cx="50" cy="65" rx="3.5" ry="2.5" fill="#F43F5E"/><path d="M45 69 Q50 73 55 69" stroke="#9D174D" stroke-width="1.8" fill="none" stroke-linecap="round"/><ellipse cx="40" cy="80" rx="5.5" ry="4.5" fill="#FFFFFF" stroke="#F1F5F9" stroke-width="1.5"/><ellipse cx="60" cy="80" rx="5.5" ry="4.5" fill="#FFFFFF" stroke="#F1F5F9" stroke-width="1.5"/></svg>` 
+      }
+    ],
+    group10: { 
+      id: "animal_truck_10", 
+      val: 10, 
+      name_ms: "Pek 10 Haiwan", 
+      name_en: "10-Animal Pack", 
+      svg: `<svg viewBox="0 0 120 100"><defs><linearGradient id="wagonGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#34D399"/><stop offset="100%" stop-color="#059669"/></linearGradient></defs><ellipse cx="26" cy="30" rx="3.5" ry="10" fill="#FFFFFF" transform="rotate(-15,26,30)"/><circle cx="32" cy="38" r="12" fill="#FFFFFF"/><circle cx="28" cy="37" r="2.2" fill="#1E293B"/><circle cx="35" cy="37" r="2.2" fill="#1E293B"/><ellipse cx="32" cy="41" rx="2" ry="1.2" fill="#F43F5E"/><circle cx="52" cy="36" r="11" fill="#FDE047"/><circle cx="49" cy="35" r="2" fill="#1E293B"/><circle cx="55" cy="35" r="2" fill="#1E293B"/><polygon points="52,38 48,41 56,41" fill="#F97316"/><ellipse cx="72" cy="34" rx="4" ry="8" fill="#92400E" transform="rotate(-20,72,34)"/><circle cx="76" cy="37" r="12" fill="#FEF3C7"/><circle cx="73" cy="36" r="2" fill="#1E293B"/><circle cx="79" cy="36" r="2" fill="#1E293B"/><ellipse cx="76" cy="40" rx="2.5" ry="1.8" fill="#1E293B"/><polygon points="90,26 95,16 99,28" fill="#FB923C"/><polygon points="103,28 107,16 111,26" fill="#FB923C"/><circle cx="100" cy="38" r="11" fill="#FFEDD5"/><circle cx="97" cy="37" r="2" fill="#1E293B"/><circle cx="103" cy="37" r="2" fill="#1E293B"/><rect x="12" y="44" width="96" height="42" rx="8" fill="url(#wagonGrad)" stroke="#047857" stroke-width="2.5"/><rect x="16" y="48" width="88" height="6" rx="2" fill="#6EE7B7" opacity="0.6"/><circle cx="30" cy="88" r="9" fill="#1E293B" stroke="#475569" stroke-width="2"/><circle cx="30" cy="88" r="3.5" fill="#E2E8F0"/><circle cx="90" cy="88" r="9" fill="#1E293B" stroke="#475569" stroke-width="2"/><circle cx="90" cy="88" r="3.5" fill="#E2E8F0"/><circle cx="60" cy="65" r="16" fill="#FDE047" stroke="#CA8A04" stroke-width="2.5"/><text x="60" y="71" font-family="'Quicksand', sans-serif" font-size="16" font-weight="900" fill="#78350F" text-anchor="middle">10</text></svg>` 
+    }
+  },
+  {
+    id: "donuts",
+    name_ms: "Kotak Donat",
+    name_en: "Donut Box",
+    items: [
+      { id: "donut_pink", val: 1, name_ms: "Donat Strawberi", name_en: "Pink Donut", svg: `<svg viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="36" ry="32" fill="#D97706"/><ellipse cx="50" cy="48" rx="32" ry="28" fill="#F43F5E"/><ellipse cx="50" cy="48" rx="12" ry="10" fill="#451A03"/><rect x="36" y="34" width="6" height="2" fill="#FDE047" rx="1"/><rect x="58" y="36" width="6" height="2" fill="#38BDF8" rx="1"/><rect x="62" y="54" width="6" height="2" fill="#4ADE80" rx="1"/><rect x="34" y="56" width="6" height="2" fill="#FFFFFF" rx="1"/></svg>` },
+      { id: "donut_choco", val: 1, name_ms: "Donat Coklat", name_en: "Choco Donut", svg: `<svg viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="36" ry="32" fill="#D97706"/><ellipse cx="50" cy="48" rx="32" ry="28" fill="#5A2E11"/><ellipse cx="50" cy="48" rx="12" ry="10" fill="#451A03"/><circle cx="36" cy="38" r="2" fill="#FDE047"/><circle cx="60" cy="36" r="2" fill="#F472B6"/><circle cx="64" cy="56" r="2" fill="#FFFFFF"/><circle cx="38" cy="58" r="2" fill="#60A5FA"/></svg>` },
+      { id: "donut_blue", val: 1, name_ms: "Donat Beri", name_en: "Berry Donut", svg: `<svg viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="36" ry="32" fill="#D97706"/><ellipse cx="50" cy="48" rx="32" ry="28" fill="#38BDF8"/><ellipse cx="50" cy="48" rx="12" ry="10" fill="#0369A1"/><rect x="42" y="32" width="5" height="2.5" fill="#FBBF24" rx="1"/><rect x="54" y="58" width="5" height="2.5" fill="#F43F5E" rx="1"/></svg>` },
+      { id: "donut_gold", val: 1, name_ms: "Donat Emas", name_en: "Golden Donut", svg: `<svg viewBox="0 0 100 100"><ellipse cx="50" cy="50" rx="36" ry="32" fill="#D97706"/><ellipse cx="50" cy="48" rx="32" ry="28" fill="#FACC15"/><ellipse cx="50" cy="48" rx="12" ry="10" fill="#78350F"/><circle cx="38" cy="38" r="3" fill="#FFFFFF" opacity="0.6"/></svg>` }
+    ],
+    group10: { id: "donut_box_10", val: 10, name_ms: "Kotak 10 Donat", name_en: "10-Donut Box", svg: `<svg viewBox="0 0 120 100"><rect x="12" y="30" width="96" height="58" rx="8" fill="#EC4899" stroke="#BE185D" stroke-width="3"/><rect x="20" y="38" width="80" height="20" rx="4" fill="#FDF2F8"/><ellipse cx="35" cy="48" rx="8" ry="6" fill="#F43F5E"/><ellipse cx="60" cy="48" rx="8" ry="6" fill="#5A2E11"/><ellipse cx="85" cy="48" rx="8" ry="6" fill="#38BDF8"/><rect x="42" y="64" width="36" height="18" rx="4" fill="#FFFFFF"/><text x="60" y="78" font-size="14" font-weight="900" fill="#BE185D" text-anchor="middle">10</text></svg>` }
+  },
+  {
+    id: "fries",
+    name_ms: "Bekas Kentang",
+    name_en: "Fries Box",
+    items: [
+      { id: "fry_single", val: 1, name_ms: "Kentang Emas", name_en: "Golden Fry", svg: `<svg viewBox="0 0 100 100"><rect x="42" y="10" width="16" height="80" rx="4" fill="#FBBF24" stroke="#D97706" stroke-width="2"/><line x1="47" y1="14" x2="47" y2="86" stroke="#FEF08A" stroke-width="4" stroke-linecap="round"/><polygon points="42,10 58,10 54,20 46,20" fill="#FDE047"/></svg>` },
+      { id: "fry_double", val: 1, name_ms: "Kentang Kembar", name_en: "Twin Fries", svg: `<svg viewBox="0 0 100 100"><rect x="30" y="14" width="15" height="76" rx="4" fill="#FBBF24" stroke="#D97706" stroke-width="2" transform="rotate(-6,37,52)"/><line x1="35" y1="18" x2="35" y2="86" stroke="#FEF08A" stroke-width="3" stroke-linecap="round" transform="rotate(-6,37,52)"/><rect x="52" y="10" width="15" height="80" rx="4" fill="#FACC15" stroke="#D97706" stroke-width="2" transform="rotate(6,59,50)"/><line x1="57" y1="14" x2="57" y2="86" stroke="#FEF08A" stroke-width="3" stroke-linecap="round" transform="rotate(6,59,50)"/></svg>` },
+      { id: "fry_long", val: 1, name_ms: "Kentang Rangup", name_en: "Crispy Fry", svg: `<svg viewBox="0 0 100 100"><rect x="41" y="8" width="18" height="84" rx="4" fill="#F59E0B" stroke="#B45309" stroke-width="2"/><line x1="46" y1="12" x2="46" y2="88" stroke="#FEF08A" stroke-width="4" stroke-linecap="round"/><line x1="53" y1="12" x2="53" y2="88" stroke="#D97706" stroke-width="1.5"/></svg>` }
+    ],
+    group10: { id: "fries_bundle_10", val: 10, name_ms: "Pek 10 Kentang", name_en: "10-Fries Pack", svg: `<svg viewBox="0 0 120 100"><defs><linearGradient id="fryGoldGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#F59E0B"/><stop offset="35%" stop-color="#FDE047"/><stop offset="70%" stop-color="#FACC15"/><stop offset="100%" stop-color="#D97706"/></linearGradient><linearGradient id="redBoxGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#EF4444"/><stop offset="100%" stop-color="#B91C1C"/></linearGradient></defs><g stroke="#B45309" stroke-width="1.2" stroke-linejoin="round"><rect x="24" y="18" width="10" height="40" rx="2.5" fill="url(#fryGoldGrad)" transform="rotate(-15,29,38)"/><rect x="35" y="10" width="10" height="46" rx="2.5" fill="url(#fryGoldGrad)" transform="rotate(-8,40,33)"/><rect x="47" y="6" width="11" height="50" rx="2.5" fill="url(#fryGoldGrad)" transform="rotate(-2,52,31)"/><rect x="60" y="8" width="11" height="48" rx="2.5" fill="url(#fryGoldGrad)" transform="rotate(4,65,32)"/><rect x="73" y="11" width="10" height="45" rx="2.5" fill="url(#fryGoldGrad)" transform="rotate(10,78,33)"/><rect x="84" y="20" width="10" height="38" rx="2.5" fill="url(#fryGoldGrad)" transform="rotate(18,89,39)"/><rect x="42" y="16" width="10" height="40" rx="2.5" fill="#FEF08A"/><rect x="67" y="17" width="10" height="40" rx="2.5" fill="#FEF08A"/></g><ellipse cx="60" cy="48" rx="42" ry="12" fill="#7F1D1D"/><path d="M 18 46 Q 60 62 102 46 L 90 94 Q 60 98 30 94 Z" fill="url(#redBoxGrad)" stroke="#7F1D1D" stroke-width="2.5"/><path d="M 18 46 Q 60 62 102 46 Q 60 52 18 46 Z" fill="#F87171" opacity="0.6"/><circle cx="60" cy="74" r="16" fill="#FACC15" stroke="#CA8A04" stroke-width="2.5"/><text x="60" y="80" font-family="'Quicksand', sans-serif" font-size="16" font-weight="900" fill="#991B1B" text-anchor="middle">10</text></svg>` }
+  },
+  {
+    id: "cars",
+    name_ms: "Garaj Kereta",
+    name_en: "Car Garage",
+    items: [
+      { id: "car_red", val: 1, name_ms: "Kereta Merah", name_en: "Red Car", svg: `<svg viewBox="0 0 100 100"><path d="M15 65 L22 52 Q30 38 48 38 L65 38 Q78 38 85 52 L90 65 Z" fill="#EF4444"/><rect x="10" y="62" width="82" height="14" rx="5" fill="#DC2626"/><rect x="35" y="44" width="16" height="12" rx="2" fill="#93C5FD"/><rect x="56" y="44" width="16" height="12" rx="2" fill="#93C5FD"/><circle cx="28" cy="76" r="10" fill="#1E293B"/><circle cx="28" cy="76" r="4" fill="#94A3B8"/><circle cx="72" cy="76" r="10" fill="#1E293B"/><circle cx="72" cy="76" r="4" fill="#94A3B8"/></svg>` },
+      { id: "car_yellow", val: 1, name_ms: "Kereta Kuning", name_en: "Yellow Car", svg: `<svg viewBox="0 0 100 100"><path d="M15 65 L22 52 Q30 38 48 38 L65 38 Q78 38 85 52 L90 65 Z" fill="#FACC15"/><rect x="10" y="62" width="82" height="14" rx="5" fill="#EAB308"/><rect x="35" y="44" width="16" height="12" rx="2" fill="#BAE6FD"/><rect x="56" y="44" width="16" height="12" rx="2" fill="#BAE6FD"/><circle cx="28" cy="76" r="10" fill="#1E293B"/><circle cx="72" cy="76" r="10" fill="#1E293B"/></svg>` },
+      { id: "car_blue", val: 1, name_ms: "Kereta Biru", name_en: "Blue Car", svg: `<svg viewBox="0 0 100 100"><path d="M15 65 L22 52 Q30 38 48 38 L65 38 Q78 38 85 52 L90 65 Z" fill="#3B82F6"/><rect x="10" y="62" width="82" height="14" rx="5" fill="#2563EB"/><rect x="35" y="44" width="16" height="12" rx="2" fill="#E0F2FE"/><rect x="56" y="44" width="16" height="12" rx="2" fill="#E0F2FE"/><circle cx="28" cy="76" r="10" fill="#1E293B"/><circle cx="72" cy="76" r="10" fill="#1E293B"/></svg>` }
+    ],
+    group10: { id: "car_carrier_10", val: 10, name_ms: "Trak 10 Kereta", name_en: "10-Car Carrier", svg: `<svg viewBox="0 0 120 100"><rect x="10" y="35" width="85" height="42" rx="6" fill="#6366F1" stroke="#4338CA" stroke-width="3"/><rect x="95" y="48" width="20" height="29" rx="4" fill="#4F46E5"/><circle cx="25" cy="78" r="9" fill="#1E293B"/><circle cx="55" cy="78" r="9" fill="#1E293B"/><circle cx="85" cy="78" r="9" fill="#1E293B"/><rect x="36" y="44" width="34" height="18" rx="3" fill="#EEF2FF"/><text x="53" y="58" font-size="14" font-weight="900" fill="#4338CA" text-anchor="middle">10</text></svg>` }
+  },
+  {
+    id: "toys",
+    name_ms: "Kotak Mainan",
+    name_en: "Toy Box",
+    items: [
+      { id: "toy_block", val: 1, name_ms: "Blok Mainan", name_en: "Toy Block", svg: `<svg viewBox="0 0 100 100"><rect x="25" y="25" width="50" height="50" rx="8" fill="#F97316" stroke="#C2410C" stroke-width="3"/><rect x="35" y="35" width="30" height="30" rx="4" fill="#FB923C"/><text x="50" y="57" font-size="22" font-weight="900" fill="#FFFFFF" text-anchor="middle">A</text></svg>` },
+      { id: "toy_ball", val: 1, name_ms: "Bola Getah", name_en: "Play Ball", svg: `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="34" fill="#38BDF8"/><path d="M50 16 Q25 50 50 84" fill="#F43F5E"/><path d="M50 16 Q75 50 50 84" fill="#FACC15"/><circle cx="40" cy="38" r="5" fill="#FFFFFF" opacity="0.4"/></svg>` },
+      { id: "toy_bear", val: 1, name_ms: "Beruang Comel", name_en: "Teddy Toy", svg: `<svg viewBox="0 0 100 100"><circle cx="32" cy="30" r="10" fill="#B45309"/><circle cx="68" cy="30" r="10" fill="#B45309"/><circle cx="50" cy="55" r="28" fill="#D97706"/><ellipse cx="50" cy="62" rx="14" ry="10" fill="#FDE68A"/><circle cx="42" cy="52" r="3.5" fill="#451A03"/><circle cx="58" cy="52" r="3.5" fill="#451A03"/><ellipse cx="50" cy="60" rx="5" ry="3.5" fill="#451A03"/></svg>` },
+      { id: "toy_rocket", val: 1, name_ms: "Roket Mainan", name_en: "Toy Rocket", svg: `<svg viewBox="0 0 100 100"><path d="M50 18 Q62 38 62 65 L38 65 Q38 38 50 18 Z" fill="#EF4444"/><polygon points="38,55 24,72 38,68" fill="#3B82F6"/><polygon points="62,55 76,72 62,68" fill="#3B82F6"/><circle cx="50" cy="42" r="7" fill="#E0F2FE"/><polygon points="45,65 50,78 55,65" fill="#F59E0B"/></svg>` }
+    ],
+    group10: { id: "toy_crate_10", val: 10, name_ms: "Peti 10 Mainan", name_en: "10-Toy Chest", svg: `<svg viewBox="0 0 120 100"><rect x="15" y="32" width="90" height="56" rx="8" fill="#8B5CF6" stroke="#6D28D9" stroke-width="3"/><path d="M15 48 L105 48" stroke="#6D28D9" stroke-width="3"/><circle cx="35" cy="40" r="6" fill="#FBBF24"/><circle cx="85" cy="40" r="6" fill="#38BDF8"/><rect x="42" y="60" width="36" height="18" rx="4" fill="#EDE9FE"/><text x="60" y="74" font-size="14" font-weight="900" fill="#6D28D9" text-anchor="middle">10</text></svg>` }
+  },
+  {
+    id: "flowers",
+    name_ms: "Bakul Bunga",
+    name_en: "Flower Basket",
+    items: [
+      { id: "flower_tulip", val: 1, name_ms: "Bunga Tulip", name_en: "Tulip", svg: `<svg viewBox="0 0 100 100"><line x1="50" y1="55" x2="50" y2="88" stroke="#16A34A" stroke-width="5" stroke-linecap="round"/><ellipse cx="40" cy="74" rx="10" ry="4" fill="#22C55E" transform="rotate(-30,40,74)"/><path d="M50 30 C30 30 30 55 50 65 C70 55 70 30 50 30 Z" fill="#F43F5E"/><path d="M50 30 L45 42 L50 48 L55 42 Z" fill="#FB7185"/></svg>` },
+      { id: "flower_daisy", val: 1, name_ms: "Bunga Kekwa", name_en: "Daisy", svg: `<svg viewBox="0 0 100 100"><line x1="50" y1="50" x2="50" y2="88" stroke="#16A34A" stroke-width="5"/><circle cx="34" cy="50" r="8" fill="#FFFFFF"/><circle cx="66" cy="50" r="8" fill="#FFFFFF"/><circle cx="50" cy="34" r="8" fill="#FFFFFF"/><circle cx="50" cy="66" r="8" fill="#FFFFFF"/><circle cx="50" cy="50" r="11" fill="#FACC15"/></svg>` },
+      { id: "flower_rose", val: 1, name_ms: "Bunga Mawar", name_en: "Rose", svg: `<svg viewBox="0 0 100 100"><line x1="50" y1="52" x2="50" y2="88" stroke="#16A34A" stroke-width="5"/><circle cx="50" cy="46" r="22" fill="#E11D48"/><circle cx="50" cy="46" r="15" fill="#BE123C"/><circle cx="50" cy="46" r="8" fill="#FB7185"/></svg>` }
+    ],
+    group10: { id: "flower_pot_10", val: 10, name_ms: "Pasu 10 Bunga", name_en: "10-Flower Pot", svg: `<svg viewBox="0 0 120 100"><polygon points="30,45 90,45 80,90 40,90" fill="#EA580C" stroke="#C2410C" stroke-width="3"/><circle cx="45" cy="35" r="10" fill="#F43F5E"/><circle cx="60" cy="28" r="11" fill="#FBBF24"/><circle cx="75" cy="35" r="10" fill="#A855F7"/><circle cx="60" cy="66" r="14" fill="#FFEDD5"/><text x="60" y="72" font-size="14" font-weight="900" fill="#C2410C" text-anchor="middle">10</text></svg>` }
+  },
+  {
+    id: "gifts",
+    name_ms: "Kotak Hadiah",
+    name_en: "Gift Container",
+    items: [
+      { id: "gift_blue", val: 1, name_ms: "Hadiah Biru", name_en: "Blue Gift", svg: `<svg viewBox="0 0 100 100"><rect x="25" y="40" width="50" height="45" rx="6" fill="#3B82F6" stroke="#1D4ED8" stroke-width="2.5"/><rect x="20" y="32" width="60" height="12" rx="4" fill="#60A5FA"/><line x1="50" y1="32" x2="50" y2="85" stroke="#FDE047" stroke-width="8"/><circle cx="50" cy="26" r="8" fill="#FACC15"/></svg>` },
+      { id: "gift_pink", val: 1, name_ms: "Hadiah Merah Jambu", name_en: "Pink Gift", svg: `<svg viewBox="0 0 100 100"><rect x="25" y="40" width="50" height="45" rx="6" fill="#EC4899" stroke="#BE185D" stroke-width="2.5"/><rect x="20" y="32" width="60" height="12" rx="4" fill="#F472B6"/><line x1="50" y1="32" x2="50" y2="85" stroke="#FFFFFF" stroke-width="8"/><circle cx="50" cy="26" r="8" fill="#FFFFFF"/></svg>` },
+      { id: "gift_star", val: 1, name_ms: "Hadiah Emas", name_en: "Golden Gift", svg: `<svg viewBox="0 0 100 100"><rect x="25" y="40" width="50" height="45" rx="6" fill="#F59E0B" stroke="#B45309" stroke-width="2.5"/><rect x="20" y="32" width="60" height="12" rx="4" fill="#FBBF24"/><line x1="50" y1="32" x2="50" y2="85" stroke="#EF4444" stroke-width="8"/><circle cx="50" cy="26" r="8" fill="#EF4444"/></svg>` }
+    ],
+    group10: { id: "gift_hamper_10", val: 10, name_ms: "Hamper 10 Hadiah", name_en: "10-Gift Hamper", svg: `<svg viewBox="0 0 120 100"><rect x="18" y="35" width="84" height="52" rx="8" fill="#14B8A6" stroke="#0F766E" stroke-width="3"/><rect x="30" y="24" width="24" height="20" rx="3" fill="#F43F5E"/><rect x="66" y="24" width="24" height="20" rx="3" fill="#FBBF24"/><rect x="42" y="58" width="36" height="18" rx="4" fill="#CCFBF1"/><text x="60" y="72" font-size="14" font-weight="900" fill="#0F766E" text-anchor="middle">10</text></svg>` }
+  }
+];
+
+function showScreen(screenId) {
+  const screens = [
+    'screen-home',
+    'screen-instructions',
+    'screen-range',
+    'screen-session',
+    'screen-gameplay',
+    'screen-connect',
+    'screen-result'
+  ];
+
+  screens.forEach(s => {
+    const el = document.getElementById(s);
+    if (el) {
+      if (s === screenId) {
+        el.classList.remove('hidden');
+      } else {
+        el.classList.add('hidden');
+      }
+    }
+  });
+
+  currentScreen = screenId;
+
+  const backBtn = document.getElementById('btn-top-back');
+  if (backBtn) {
+    if (screenId === 'screen-home') {
+      backBtn.classList.add('hidden');
+    } else {
+      backBtn.classList.remove('hidden');
+    }
+  }
+
+  const homeBtn = document.getElementById('btn-top-home');
+  if (homeBtn) {
+    if (screenId === 'screen-home') {
+      homeBtn.classList.add('hidden');
+    } else {
+      homeBtn.classList.remove('hidden');
+    }
+  }
+
+  const scoreBadge = document.getElementById('game-score-badge');
+  if (scoreBadge) {
+    if (screenId === 'screen-gameplay' || screenId === 'screen-connect') {
+      scoreBadge.classList.remove('hidden');
+    } else {
+      scoreBadge.classList.add('hidden');
+    }
+  }
+}
+
+function navigateBack() {
+  audio.playPop();
+  if (currentScreen === 'screen-instructions') {
+    showScreen('screen-home');
+  } else if (currentScreen === 'screen-range') {
+    showScreen('screen-instructions');
+  } else if (currentScreen === 'screen-session') {
+    showScreen('screen-range');
+  } else if (currentScreen === 'screen-gameplay' || currentScreen === 'screen-connect') {
+    showScreen('screen-home');
+  } else if (currentScreen === 'screen-result') {
+    showScreen('screen-home');
+  }
+}
+
+function goToInstructions() {
+  audio.playPop();
+  showScreen('screen-instructions');
+}
+
+function goToRangeSelection() {
+  audio.playPop();
+  showScreen('screen-range');
+}
+
+function selectRange(range) {
+  audio.playPop();
+  selectedRange = range;
+  showScreen('screen-session');
+}
+
+function startSession(qCount) {
+  audio.playChime();
+  sessionQuestionCount = qCount;
+  currentQuestionIndex = 0;
+  sessionScore = 0;
+  sessionCorrectCount = 0;
+  sessionMistakes = 0;
+  updateScoreDisplay();
+  generateNextTask();
+}
+
+function goToHome() {
+  audio.playPop();
+  showScreen('screen-home');
+}
+
+function playAgain() {
+  audio.playChime();
+  currentQuestionIndex = 0;
+  sessionScore = 0;
+  sessionCorrectCount = 0;
+  sessionMistakes = 0;
+  updateScoreDisplay();
+  generateNextTask();
+}
+
+function generateNextTask() {
+  if (sessionQuestionCount !== 'free' && currentQuestionIndex >= sessionQuestionCount) {
+    if (Math.random() > 0.3 && sessionQuestionCount >= 5) {
+      startConnectBonusGame();
+    } else {
+      showResultScreen();
+    }
+    return;
+  }
+
+  currentQuestionIndex++;
+  currentLoadedCount = 0;
+  currentLoadedObjects = [];
+
+  let target = 5;
+  if (selectedRange === '1-5') {
+    target = Math.floor(Math.random() * 5) + 1;
+  } else if (selectedRange === '1-10') {
+    target = Math.floor(Math.random() * 10) + 1;
+  } else if (selectedRange === '1-20') {
+    target = Math.floor(Math.random() * 20) + 1;
+  } else if (selectedRange === '1-50') {
+    target = Math.floor(Math.random() * 50) + 1;
+  } else if (selectedRange === '1-100') {
+    target = Math.floor(Math.random() * 99) + 2;
+  }
+
+  let themePool = THEMES.filter(t => !previousTaskSignature.includes(t.id));
+  if (themePool.length === 0) themePool = THEMES;
+  activeTheme = themePool[Math.floor(Math.random() * themePool.length)];
+
+  const taskSig = `${activeTheme.id}_${target}`;
+  if (taskSig === previousTaskSignature) {
+    target = target === 5 ? 4 : target + 1;
+  }
+  previousTaskSignature = `${activeTheme.id}_${target}`;
+  currentTargetNumber = target;
+
+  availableShelfItems = [];
+
+  if (target >= 20) {
+    const tensNeeded = Math.floor(target / 10);
+    const onesNeeded = target % 10;
+    const tensToProvide = Math.min(tensNeeded + (Math.random() > 0.5 ? 1 : 0), 10);
+    for (let i = 0; i < tensToProvide; i++) {
+      availableShelfItems.push({
+        ...activeTheme.group10,
+        uid: "grp10_" + i + "_" + Date.now()
+      });
+    }
+
+    const onesToProvide = onesNeeded + Math.floor(Math.random() * 3) + 2;
+    for (let j = 0; j < onesToProvide; j++) {
+      const sampleItem = activeTheme.items[j % activeTheme.items.length];
+      availableShelfItems.push({
+        ...sampleItem,
+        uid: "item_" + j + "_" + Date.now()
+      });
+    }
+  } else {
+    const distractors = Math.floor(Math.random() * 3) + 2;
+    const totalItems = target + distractors;
+
+    for (let k = 0; k < totalItems; k++) {
+      const sampleItem = activeTheme.items[k % activeTheme.items.length];
+      availableShelfItems.push({
+        ...sampleItem,
+        uid: "item_" + k + "_" + Date.now()
+      });
+    }
+
+    if (target >= 10 && Math.random() > 0.5 && activeTheme.group10) {
+      availableShelfItems.unshift({
+        ...activeTheme.group10,
+        uid: "grp10_single_" + Date.now()
+      });
+    }
+  }
+
+  availableShelfItems.sort(() => Math.random() - 0.5);
+  renderGameplayScreen();
+  showScreen('screen-gameplay');
+}
+
+function renderGameplayScreen() {
+  const isEn = (currentLang === 'en');
+  const t = I18N[currentLang];
+
+  document.getElementById('val-target-number').textContent = currentTargetNumber;
+  
+  const progText = sessionQuestionCount === 'free'
+    ? `${currentQuestionIndex}`
+    : `${currentQuestionIndex} / ${sessionQuestionCount}`;
+  document.getElementById('val-prog-current').textContent = progText;
+
+  updateQuantityCounter();
+
+  const destName = isEn ? activeTheme.name_en : activeTheme.name_ms;
+  document.getElementById('destination-title').textContent = destName;
+
+  const dropContainer = document.getElementById('destination-items-container');
+  dropContainer.innerHTML = `
+    <div id="destination-placeholder-guide" class="flex flex-col items-center justify-center text-amber-700/60 py-2 select-none">
+      <svg class="w-7 h-7 mb-1 opacity-70 animate-bounce" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <polyline points="19 12 12 19 5 12"></polyline>
+      </svg>
+      <span id="destination-placeholder-text" class="text-xs font-extrabold tracking-wide">${t.destPlaceholder}</span>
+    </div>
+  `;
+  document.getElementById('destination-progress-fill').style.width = '0%';
+
+  setMascotBubble(t.mascotDragPrompt);
+
+  const shelf = document.getElementById('shelf-items-container');
+  shelf.innerHTML = '';
+
+  availableShelfItems.forEach((item) => {
+    const el = document.createElement('div');
+    el.className = 'draggable-item relative flex flex-col items-center justify-center p-1.5 rounded-2xl bg-white/80 border-2 border-slate-200 shadow-sm';
+    el.style.width = item.val === 10 ? '72px' : '56px';
+    el.style.height = item.val === 10 ? '66px' : '56px';
+    el.setAttribute('data-uid', item.uid);
+    el.setAttribute('data-val', item.val);
+    el.innerHTML = item.svg;
+
+    attachDragEvents(el, item);
+    shelf.appendChild(el);
+  });
+}
+
+function updateQuantityCounter() {
+  const t = I18N[currentLang];
+  document.getElementById('val-loaded-counter').textContent = `${currentLoadedCount} ${t.counterOf} ${currentTargetNumber}`;
+  
+  const pct = Math.min(100, (currentLoadedCount / currentTargetNumber) * 100);
+  document.getElementById('destination-progress-fill').style.width = `${pct}%`;
+}
+
+function updateScoreDisplay() {
+  document.getElementById('val-game-score').textContent = sessionScore;
+}
+
+function attachDragEvents(element, itemData) {
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+  let lastPointerX = 0;
+  let lastPointerY = 0;
+  let clone = null;
+
+  element.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    audio.playPop();
+
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    lastPointerX = e.clientX;
+    lastPointerY = e.clientY;
+
+    const rect = element.getBoundingClientRect();
+
+    clone = element.cloneNode(true);
+    clone.classList.add('is-dragging');
+    clone.style.position = 'fixed';
+    clone.style.left = `${rect.left}px`;
+    clone.style.top = `${rect.top}px`;
+    clone.style.width = `${rect.width}px`;
+    clone.style.height = `${rect.height}px`;
+    clone.style.pointerEvents = 'none';
+    clone.style.zIndex = '9999';
+    document.body.appendChild(clone);
+
+    element.style.opacity = '0.3';
+    try {
+      element.setPointerCapture(e.pointerId);
+    } catch (err) {}
+
+    const dropZone = document.getElementById('destination-drop-zone');
+    if (dropZone) dropZone.classList.add('destination-hover');
+  });
+
+  element.addEventListener('pointermove', (e) => {
+    if (!isDragging || !clone) return;
+    lastPointerX = e.clientX;
+    lastPointerY = e.clientY;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    clone.style.transform = `translate3d(${dx}px, ${dy}px, 0) scale(1.15)`;
+  });
+
+  const finishDrag = (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+
+    const dropZone = document.getElementById('destination-drop-zone');
+    if (dropZone) dropZone.classList.remove('destination-hover');
+
+    const pointerX = (e.clientX !== undefined && e.clientX !== 0) ? e.clientX : lastPointerX;
+    const pointerY = (e.clientY !== undefined && e.clientY !== 0) ? e.clientY : lastPointerY;
+    const dragDistance = Math.hypot(pointerX - startX, pointerY - startY);
+
+    let isInsideDropZone = false;
+    if (dropZone) {
+      const dropRect = dropZone.getBoundingClientRect();
+      const pointerInside = (
+        pointerX >= dropRect.left - 40 &&
+        pointerX <= dropRect.right + 40 &&
+        pointerY >= dropRect.top - 40 &&
+        pointerY <= dropRect.bottom + 40
+      );
+
+      let cloneInside = false;
+      if (clone) {
+        const cRect = clone.getBoundingClientRect();
+        const cCenterX = cRect.left + cRect.width / 2;
+        const cCenterY = cRect.top + cRect.height / 2;
+        cloneInside = (
+          cCenterX >= dropRect.left - 40 &&
+          cCenterX <= dropRect.right + 40 &&
+          cCenterY >= dropRect.top - 40 &&
+          cCenterY <= dropRect.bottom + 40
+        );
+      }
+      isInsideDropZone = pointerInside || cloneInside;
+    }
+
+    if (clone && clone.parentNode) {
+      clone.parentNode.removeChild(clone);
+      clone = null;
+    }
+
+    if (dragDistance < 15 || isInsideDropZone) {
+      handleItemDrop(element, itemData);
+    } else {
+      element.style.opacity = '1';
+      audio.playGentleReturn();
+    }
+
+    try {
+      element.releasePointerCapture(e.pointerId);
+    } catch (err) {}
+  };
+
+  element.addEventListener('pointerup', finishDrag);
+  element.addEventListener('pointercancel', finishDrag);
+}
+
+function handleItemDrop(domElement, itemData) {
+  const t = I18N[currentLang];
+
+  if (currentLoadedCount + itemData.val > currentTargetNumber) {
+    sessionMistakes++; // Catat kesilapan bila terlebih isi
+    audio.playGentleReturn();
+    showToast(t.feedbackEnough);
+    setMascotBubble(t.feedbackEnough);
+    domElement.style.opacity = '1';
+    
+    const dropZone = document.getElementById('destination-drop-zone');
+    if (dropZone) {
+      dropZone.classList.add('celebrate-pop');
+      setTimeout(() => dropZone.classList.remove('celebrate-pop'), 400);
+    }
+    return;
+  }
+
+  audio.playSnap();
+  currentLoadedCount += itemData.val;
+  updateQuantityCounter();
+
+  const loadedContainer = document.getElementById('destination-items-container');
+  const placeholder = document.getElementById('destination-placeholder-guide');
+  if (placeholder) placeholder.remove();
+
+  const snapItem = document.createElement('div');
+  snapItem.className = 'snap-in p-1.5 rounded-2xl bg-white/95 border-2 border-amber-300 shadow-md flex items-center justify-center';
+  snapItem.style.width = itemData.val === 10 ? '66px' : '52px';
+  snapItem.style.height = itemData.val === 10 ? '58px' : '52px';
+  snapItem.innerHTML = itemData.svg;
+  loadedContainer.appendChild(snapItem);
+
+  domElement.remove();
+
+  if (currentLoadedCount === currentTargetNumber) {
+    triggerRoundSuccess();
+  }
+}
+
+function triggerRoundSuccess() {
+  const t = I18N[currentLang];
+  audio.playCelebrate();
+  sessionScore += 10;
+  sessionCorrectCount++;
+  updateScoreDisplay();
+
+  setMascotBubble(t.feedbackSuccess);
+  showToast(`${t.feedbackSuccess} ${t.scoreAward}`);
+  createConfettiParticles();
+
+  const dropZone = document.getElementById('destination-drop-zone');
+  dropZone.classList.add('celebrate-pop');
+
+  setTimeout(() => {
+    dropZone.classList.remove('celebrate-pop');
+    generateNextTask();
+  }, 1600);
+}
+
+function createConfettiParticles() {
+  const container = document.getElementById('celebration-particles');
+  container.innerHTML = '';
+  const colors = ['#F59E0B', '#EF4444', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899'];
+
+  for (let i = 0; i < 28; i++) {
+    const p = document.createElement('div');
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const size = Math.floor(Math.random() * 10) + 8;
+    const startX = Math.random() * window.innerWidth;
+
+    p.style.position = 'absolute';
+    p.style.left = `${startX}px`;
+    p.style.top = '-20px';
+    p.style.width = `${size}px`;
+    p.style.height = `${size}px`;
+    p.style.backgroundColor = color;
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '3px';
+    p.style.opacity = '1';
+    p.style.transition = 'all 1.4s cubic-bezier(0.25, 1, 0.5, 1)';
+    container.appendChild(p);
+
+    setTimeout(() => {
+      p.style.transform = `translate(${(Math.random() - 0.5) * 160}px, ${window.innerHeight * 0.7}px) rotate(${Math.random() * 360}deg)`;
+      p.style.opacity = '0';
+    }, 20);
+  }
+
+  setTimeout(() => {
+    container.innerHTML = '';
+  }, 1500);
+}
+
+let connectActiveLine = null;
+let connectDragSource = null;
+let connectCompletedPairs = 0;
+let connectPairsTarget = 3;
+
+function startConnectBonusGame() {
+  audio.playChime();
+  showScreen('screen-connect');
+  connectCompletedPairs = 0;
+
+  const numbersCol = document.getElementById('connect-numbers-col');
+  const quantitiesCol = document.getElementById('connect-quantities-col');
+  const svgCanvas = document.getElementById('connect-svg-canvas');
+  svgCanvas.innerHTML = '';
+  numbersCol.innerHTML = '';
+  quantitiesCol.innerHTML = '';
+
+  const numPool = [2, 3, 4, 5, 6, 7, 8];
+  numPool.sort(() => Math.random() - 0.5);
+  const selectedPairs = numPool.slice(0, 3);
+  connectPairsTarget = selectedPairs.length;
+  updateConnectPairsBadge();
+
+  selectedPairs.forEach(num => {
+    const btn = document.createElement('div');
+    btn.className = 'btn-3d btn-soft p-3 rounded-2xl flex items-center justify-center text-3xl font-black text-indigo-700 cursor-grab border-2 border-indigo-200 select-none';
+    btn.textContent = num;
+    btn.setAttribute('data-number', num);
+    attachConnectDragEvents(btn, num);
+    numbersCol.appendChild(btn);
+  });
+
+  const shuffledQuantities = [...selectedPairs].sort(() => Math.random() - 0.5);
+  shuffledQuantities.forEach(qty => {
+    const box = document.createElement('div');
+    box.className = 'glass-card p-2 rounded-2xl flex flex-wrap items-center justify-center gap-1 border-2 border-slate-200 select-none';
+    box.style.minHeight = '70px';
+    box.setAttribute('data-target-qty', qty);
+
+    for (let q = 0; q < qty; q++) {
+      const dot = document.createElement('div');
+      dot.className = 'w-6 h-6';
+      dot.innerHTML = `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="38" fill="#F59E0B"/><polygon points="50,22 58,40 78,42 62,56 68,76 50,64 32,76 38,56 22,42 42,40" fill="#FFFFFF"/></svg>`;
+      box.appendChild(dot);
+    }
+    quantitiesCol.appendChild(box);
+  });
+}
+
+function updateConnectPairsBadge() {
+  const t = I18N[currentLang];
+  const left = connectPairsTarget - connectCompletedPairs;
+  document.getElementById('connect-pairs-left').textContent = `${left} ${t.connectPairs}`;
+}
+
+function attachConnectDragEvents(numElement, numValue) {
+  numElement.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (numElement.classList.contains('is-connected')) return;
+
+    audio.playPop();
+    connectDragSource = { el: numElement, val: numValue };
+
+    const svgCanvas = document.getElementById('connect-svg-canvas');
+    const svgRect = svgCanvas.getBoundingClientRect();
+    const elRect = numElement.getBoundingClientRect();
+
+    const startX = elRect.right - svgRect.left;
+    const startY = elRect.top + elRect.height / 2 - svgRect.top;
+
+    connectActiveLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    connectActiveLine.setAttribute('x1', startX);
+    connectActiveLine.setAttribute('y1', startY);
+    connectActiveLine.setAttribute('x2', startX);
+    connectActiveLine.setAttribute('y2', startY);
+    connectActiveLine.setAttribute('stroke', '#6366F1');
+    connectActiveLine.setAttribute('stroke-width', '6');
+    connectActiveLine.setAttribute('stroke-linecap', 'round');
+    connectActiveLine.setAttribute('stroke-dasharray', '8,6');
+    svgCanvas.appendChild(connectActiveLine);
+
+    numElement.setPointerCapture(e.pointerId);
+  });
+
+  numElement.addEventListener('pointermove', (e) => {
+    if (!connectActiveLine) return;
+    const svgCanvas = document.getElementById('connect-svg-canvas');
+    const svgRect = svgCanvas.getBoundingClientRect();
+    const curX = e.clientX - svgRect.left;
+    const curY = e.clientY - svgRect.top;
+    connectActiveLine.setAttribute('x2', curX);
+    connectActiveLine.setAttribute('y2', curY);
+  });
+
+  const finishConnect = (e) => {
+    if (!connectActiveLine) return;
+
+    const svgCanvas = document.getElementById('connect-svg-canvas');
+    const targets = document.querySelectorAll('#connect-quantities-col [data-target-qty]');
+    let matchedTarget = null;
+
+    targets.forEach(targetEl => {
+      const r = targetEl.getBoundingClientRect();
+      if (
+        e.clientX >= r.left - 15 &&
+        e.clientX <= r.right + 15 &&
+        e.clientY >= r.top - 15 &&
+        e.clientY <= r.bottom + 15
+      ) {
+        matchedTarget = targetEl;
+      }
+    });
+
+    if (matchedTarget) {
+      const targetVal = parseInt(matchedTarget.getAttribute('data-target-qty'), 10);
+      if (targetVal === numValue && !matchedTarget.classList.contains('is-connected')) {
+        audio.playSnap();
+        sessionScore += 10;
+        updateScoreDisplay();
+
+        const svgRect = svgCanvas.getBoundingClientRect();
+        const tRect = matchedTarget.getBoundingClientRect();
+        const finalX = tRect.left - svgRect.left;
+        const finalY = tRect.top + tRect.height / 2 - svgRect.top;
+
+        connectActiveLine.setAttribute('x2', finalX);
+        connectActiveLine.setAttribute('y2', finalY);
+        connectActiveLine.setAttribute('stroke', '#10B981');
+        connectActiveLine.setAttribute('stroke-width', '8');
+        connectActiveLine.removeAttribute('stroke-dasharray');
+
+        numElement.classList.add('is-connected', 'bg-emerald-100', 'border-emerald-400');
+        matchedTarget.classList.add('is-connected', 'bg-emerald-50', 'border-emerald-400');
+        connectCompletedPairs++;
+        updateConnectPairsBadge();
+
+        if (connectCompletedPairs >= connectPairsTarget) {
+          audio.playCelebrate();
+          showToast(I18N[currentLang].feedbackSuccess);
+          setTimeout(() => finishConnectBonus(), 1200);
+        }
+      } else {
+        audio.playGentleReturn();
+        svgCanvas.removeChild(connectActiveLine);
+      }
+    } else {
+      audio.playGentleReturn();
+      svgCanvas.removeChild(connectActiveLine);
+    }
+
+    connectActiveLine = null;
+    connectDragSource = null;
+    try {
+      numElement.releasePointerCapture(e.pointerId);
+    } catch (err) {}
+  };
+
+  numElement.addEventListener('pointerup', finishConnect);
+  numElement.addEventListener('pointercancel', finishConnect);
+}
+
+function finishConnectBonus() {
+  audio.playPop();
+  showResultScreen();
+}
+
+function showResultScreen() {
+  try {
+    audio.playCelebrate();
+  } catch (e) {}
+
+  showScreen('screen-result');
+
+  // Kiraan ketepatan yang adil dan tepat: 100% jika tiada kesilapan terlebih isi
+  const totalRoundsAttempted = sessionCorrectCount + sessionMistakes;
+  const accuracy = totalRoundsAttempted > 0 
+    ? Math.round((sessionCorrectCount / totalRoundsAttempted) * 100) 
+    : 100;
+
+  const elScore = document.getElementById('res-val-score');
+  const elAcc = document.getElementById('res-val-acc');
+  const elAnswered = document.getElementById('res-val-answered');
+  const elCorrect = document.getElementById('res-val-correct');
+
+  if (elScore) elScore.textContent = sessionScore;
+  if (elAcc) elAcc.textContent = `${accuracy}%`;
+  if (elAnswered) elAnswered.textContent = currentQuestionIndex;
+  if (elCorrect) elCorrect.textContent = sessionCorrectCount;
+
+  saveSessionRecord({
+    date: new Date().toLocaleDateString(),
+    score: sessionScore,
+    questions: currentQuestionIndex,
+    correct: sessionCorrectCount,
+    accuracy: accuracy
+  });
+}
+
+function saveSessionRecord(sessionData) {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const profile = raw ? JSON.parse(raw) : { sessions: [] };
+    if (!Array.isArray(profile.sessions)) profile.sessions = [];
+    profile.sessions.push(sessionData);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+  } catch (e) {}
+}
+
+let toastTimeout = null;
+function showToast(msg) {
+  const box = document.getElementById('toast-box');
+  const txt = document.getElementById('toast-text');
+  txt.textContent = msg;
+  box.classList.remove('opacity-0', '-translate-y-8', 'pointer-events-none');
+  box.classList.add('opacity-100', 'translate-y-0');
+
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    box.classList.remove('opacity-100', 'translate-y-0');
+    box.classList.add('opacity-0', '-translate-y-8', 'pointer-events-none');
+  }, 1800);
+}
+
+function setMascotBubble(msg) {
+  const b = document.getElementById('gameplay-mascot-bubble');
+  if (b) b.textContent = msg;
+}
+
+function mascotGiggle() {
+  audio.playPop();
+  const mascots = document.querySelectorAll('.mascot-container');
+  mascots.forEach(m => {
+    m.classList.add('celebrate-pop');
+    setTimeout(() => m.classList.remove('celebrate-pop'), 400);
+  });
+  showToast(I18N[currentLang].mascotGiggleText);
+}
+
+function toggleAudio() {
+  audio.enabled = !audio.enabled;
+  document.getElementById('svg-sound-on').classList.toggle('hidden', !audio.enabled);
+  document.getElementById('svg-sound-off').classList.toggle('hidden', audio.enabled);
+  if (audio.enabled) audio.playPop();
+}
+
+function toggleLanguage() {
+  currentLang = currentLang === 'ms' ? 'en' : 'ms';
+  localStorage.setItem('kinderKlub_masukkanIkutBilangan_lang', currentLang);
+  audio.playPop();
+  applyLanguage(currentLang);
+}
+
+function applyLanguage(lang) {
+  const t = I18N[lang];
+  const isEn = (lang === 'en');
+  document.documentElement.lang = lang;
+  document.getElementById('lang-label').textContent = isEn ? 'EN' : 'BM';
+
+  document.getElementById('btn-top-back').setAttribute('aria-label', t.backBtnAria);
+  document.getElementById('btn-audio-toggle').setAttribute('aria-label', t.audioBtnAria);
+  document.getElementById('btn-language-toggle').setAttribute('aria-label', t.langBtnAria);
+
+  document.getElementById('header-brand-title').textContent = t.brandTitle;
+  document.getElementById('home-title').textContent = t.homeTitle;
+  document.getElementById('home-subtitle').textContent = t.homeSubtitle;
+  document.getElementById('lbl-start-play').textContent = t.btnStartPlay;
+  document.getElementById('home-mascot-speech').textContent = t.mascotWelcome;
+
+  document.getElementById('inst-title').textContent = t.instTitle;
+  document.getElementById('inst-desc').textContent = t.instDesc;
+  document.getElementById('inst-subtip').textContent = t.instSubtip;
+  document.getElementById('lbl-inst-next').textContent = t.instNext;
+  document.getElementById('demo-inst-lbl').textContent = t.demoTargetLbl;
+
+  document.getElementById('range-title').textContent = t.rangeTitle;
+  document.getElementById('range-subtitle').textContent = t.rangeSubtitle;
+  document.getElementById('range-label-1').textContent = t.range1;
+  document.getElementById('range-desc-1').textContent = t.rangeDesc1;
+  document.getElementById('range-label-2').textContent = t.range2;
+  document.getElementById('range-desc-2').textContent = t.rangeDesc2;
+  document.getElementById('range-label-3').textContent = t.range3;
+  document.getElementById('range-desc-3').textContent = t.rangeDesc3;
+  document.getElementById('range-label-4').textContent = t.range4;
+  document.getElementById('range-desc-4').textContent = t.rangeDesc4;
+  document.getElementById('range-label-5').textContent = t.range5;
+  document.getElementById('range-desc-5').textContent = t.rangeDesc5;
+  document.getElementById('tag-default').textContent = t.rangeTagDefault;
+  document.getElementById('lbl-range-hint').textContent = t.rangeHint;
+
+  document.getElementById('session-title').textContent = t.sessionTitle;
+  document.getElementById('session-subtitle').textContent = t.sessionSubtitle;
+  document.getElementById('lbl-session-5').textContent = t.session5;
+  document.getElementById('lbl-session-10').textContent = t.session10;
+  document.getElementById('lbl-session-20').textContent = t.session20;
+  document.getElementById('lbl-session-free').textContent = t.sessionFree;
+
+  document.getElementById('txt-score-label').textContent = t.lblScore;
+  document.getElementById('lbl-prog-text').textContent = t.lblProgText;
+  document.getElementById('lbl-target-txt').textContent = t.lblTargetTxt;
+  document.getElementById('lbl-counter-txt').textContent = t.lblCounterTxt;
+  document.getElementById('shelf-guide-txt').textContent = t.shelfGuide;
+  document.getElementById('shelf-hint-txt').textContent = t.shelfHint;
+
+  if (activeTheme) {
+    document.getElementById('destination-title').textContent = isEn ? activeTheme.name_en : activeTheme.name_ms;
+  } else {
+    document.getElementById('destination-title').textContent = isEn ? "Fruit Basket" : "Bakul Buah";
+  }
+
+  const placeholderText = document.getElementById('destination-placeholder-text');
+  if (placeholderText) {
+    placeholderText.textContent = t.destPlaceholder;
+  }
+
+  const mascotBubble = document.getElementById('gameplay-mascot-bubble');
+  if (mascotBubble) {
+    mascotBubble.textContent = t.mascotDragPrompt;
+  }
+
+  updateQuantityCounter();
+
+  document.getElementById('connect-badge-tag').textContent = t.connectBadge;
+  document.getElementById('connect-title').textContent = t.connectTitle;
+  document.getElementById('connect-guide-txt').textContent = t.connectGuide;
+  document.getElementById('lbl-btn-skip-bonus').textContent = t.connectSkip;
+  updateConnectPairsBadge();
+
+  document.getElementById('res-badge-tag').textContent = t.resCongrats;
+  document.getElementById('result-title').textContent = t.resComplete;
+  document.getElementById('result-subtitle').textContent = t.resSub;
+  document.getElementById('res-lbl-score').textContent = t.resScore;
+  document.getElementById('res-lbl-acc').textContent = t.resAcc;
+  document.getElementById('res-lbl-answered').textContent = t.resAnswered;
+  document.getElementById('res-lbl-correct').textContent = t.resCorrect;
+  document.getElementById('lbl-btn-again').textContent = t.btnPlayAgain;
+  document.getElementById('lbl-btn-home').textContent = t.btnHome;
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  const savedLang = localStorage.getItem('kinderKlub_masukkanIkutBilangan_lang');
+  if (savedLang === 'en' || savedLang === 'ms') {
+    currentLang = savedLang;
+  }
+  applyLanguage(currentLang);
+  showScreen('screen-home');
+});
+</script>
+
+</body>
+</html>
